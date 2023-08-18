@@ -5,18 +5,17 @@ void prompt(char *home_directory)
     // Do not hardcode the prmopt
     // printf("<Everything is a file> ");
     
-    // handling user name
+    // handling user name and hostname
 
-
-
-
-
-
-
+    char *username = getlogin();
+    if(username == NULL) return;
+    char *hostname = (char*)malloc(sizeof(char)*4096);
+    assert(hostname != NULL);
+    gethostname(hostname, 4096);
+    
     // handling pwd path
 
     char *present_working_directory = getcwd(NULL, 0);
-
     int home_dir_path_length = strlen(home_directory);
     int pwd_path_length = strlen(present_working_directory);
     int is_pwd_in_home_dir = 1;
@@ -39,11 +38,6 @@ void prompt(char *home_directory)
         is_pwd_in_home_dir = -1;
     }
 
-    printf("flag=%d\n", is_pwd_in_home_dir);
-
-    printf("%s\n%s\n", home_directory, present_working_directory);
-
-
     char *relative_path_of_pwd;
 
     if (is_pwd_in_home_dir == 1)
@@ -60,21 +54,19 @@ void prompt(char *home_directory)
         }
 
         relative_path_of_pwd[i] = '\0';
-        printf("%s\n", relative_path_of_pwd);
     }
     else if(is_pwd_in_home_dir == -1){
         relative_path_of_pwd = (char*)malloc(sizeof(char)*(2));
         relative_path_of_pwd[0] = '~';
         relative_path_of_pwd[1] = '\0';
-        printf("%s\n", relative_path_of_pwd);
     }
     else if(is_pwd_in_home_dir == 0)
     {
         // use full path i.e. present_working_directory
-        printf("%s\n", present_working_directory);
+        relative_path_of_pwd = present_working_directory;
     }
 
-
+    printf("<\033[1;34m%s\033[0m@\033[1;32m%s\033[0m:\033[1;37m%s\033[0m>\n", username, hostname, relative_path_of_pwd);
 
     free(present_working_directory);
 }
