@@ -1,2 +1,2 @@
 main:
-	gcc -g main.c prompt.c
+	gcc -g main.c prompt.c parse_input.c

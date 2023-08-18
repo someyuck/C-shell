@@ -8,4 +8,6 @@
 #include <assert.h>
 
 #include "prompt.h"
+#include "parse_input.h"
+
 #endif

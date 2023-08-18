@@ -3,7 +3,7 @@
 int main()
 {
     // Keep accepting commands
-    
+
     char *home_directory = getcwd(NULL, 0);
 
     while (1)
@@ -12,8 +12,8 @@ int main()
         prompt(home_directory);
         char input[4096];
         fgets(input, 4096, stdin);
+        shell_command_data_ptr *commands = parse_input(input, strlen(input));
     }
-
 
     free(home_directory);
 }
