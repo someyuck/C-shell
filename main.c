@@ -12,7 +12,9 @@ int main()
         prompt(home_directory);
         char input[4096];
         fgets(input, 4096, stdin);
-        shell_command_data_ptr *commands = parse_input(input, strlen(input));
+        int num_commands;
+        shell_command_data_ptr *commands = parse_input(input, strlen(input), &num_commands);
+        printf("!!!!!!%p\n", commands);
     }
 
     free(home_directory);

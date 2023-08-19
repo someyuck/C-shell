@@ -67,7 +67,7 @@ void prompt(char *home_directory)
         relative_path_of_pwd = present_working_directory;
     }
 
-    printf("<\033[1;34m%s\033[0m@\033[1;32m%s\033[0m:\033[1;37m%s\033[0m>\n", username, hostname, relative_path_of_pwd);
+    printf("<\033[1;34m%s\033[0m@\033[1;32m%s\033[0m:\033[1;37m%s\033[0m> ", username, hostname, relative_path_of_pwd);
 
     free(present_working_directory);
 }

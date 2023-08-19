@@ -28,12 +28,12 @@ void destroy_shell_command_struct(shell_command_data_ptr *spp)
 // word. we store these words in the struct defined in parse_input.h
 // returns an array of structs, each struct corresponding to one command
 
-shell_command_data_ptr *parse_input(char *input_string, int len)
+shell_command_data_ptr *parse_input(char *input_string, int len, int *num_commands)
 {
     input_string[len - 1] = '\0'; // to skip the last '\n'
 
-    shell_command_data_ptr *commands_list = NULL; // realloc this array for new commands
-    int commands_index = 0;
+    shell_command_data_ptr *command_structs_list = NULL; // realloc this array for new command structs
+    int command_structs_list_index = 0;
 
     char **command_tokens_semicolon_list = NULL;
     int command_tokens_semicolon_list_index = 0;
@@ -43,7 +43,6 @@ shell_command_data_ptr *parse_input(char *input_string, int len)
     // tokenise wrt ';'
     while (counter_1 == 0 || command_token_semicolon != NULL)
     {
-
         if (counter_1 == 0)
             command_token_semicolon = strtok(input_string, ";");
         else
@@ -52,75 +51,141 @@ shell_command_data_ptr *parse_input(char *input_string, int len)
         if (command_token_semicolon == NULL) // no more tokens
             break;
 
-        printf("command token wrt ; :::: #%s#\n", command_token_semicolon);
+        // printf("command token wrt ; :::: #%s#\n", command_token_semicolon);
 
-        // now tokenise this token wrt '&', and store the individual command strings in an array
+        // add this token to tokens list
+        command_tokens_semicolon_list = (char **)realloc(command_tokens_semicolon_list, sizeof(char *) * (command_tokens_semicolon_list_index + 1));
+        command_tokens_semicolon_list[command_tokens_semicolon_list_index++] = command_token_semicolon;
 
-        int counter_2 = 0;
-        char **command_strings_list = NULL;
+        counter_1++;
+    }
+
+    // now loop over this list, tokenise each token wrt '&', and add all but the last command string to the list for bg processes
+    // and the last one to the fg list
+
+    char **fg_command_strings_list = NULL;
+    int fg_command_strings_list_index = 0;
+    char **bg_command_strings_list = NULL;
+    int bg_command_strings_list_index = 0;
+
+    for (int i = 0; i < command_tokens_semicolon_list_index; i++)
+    {
         char *command_string;
+        int counter_2 = 0;
 
+        char **temp_command_strings_list = NULL;
+        int temp_command_strings_list_index = 0;
+
+        // add all command strings to a temp list
         while (counter_2 == 0 || command_string != NULL)
         {
             if (counter_2 == 0)
-                command_string = strtok(command_token_semicolon, "&");
+                command_string = strtok(command_tokens_semicolon_list[i], "&");
             else
                 command_string = strtok(NULL, "&");
 
             if (command_string == NULL)
                 break;
 
-            printf("command string::::: #%s#\n", command_string);
-
-            // now add this commands string to the array
-            command_strings_list = (char **)realloc(command_strings_list, sizeof(char *) * (counter_2 + 1));
-            // handle error if no memory !!
-            assert(command_strings_list != NULL);
-            command_strings_list[counter_2] = command_string;
+            temp_command_strings_list = (char **)realloc(temp_command_strings_list, sizeof(char *) * (temp_command_strings_list_index + 1));
+            temp_command_strings_list[temp_command_strings_list_index++] = command_string;
 
             counter_2++;
         }
 
-        // now that 'command_strings_list' contains each individual command string, loop through them, tokenise wrt whitespaces
-        // and store the information of each command in a 'shell_command_data' struct
-        for (int i = 0; i < counter_2; i++)
+        // add all but the last one to the bg list and the last one to fg list
+        for (int i = 0; i < temp_command_strings_list_index; i++)
         {
-            int counter_3 = 0;
-            char *word;
-            shell_command_data_ptr sp;
-
-            if (i == counter_2 - 1)
-                sp = create_shell_command_struct(0, 0); // fg process, the last command
-            else
-                sp = create_shell_command_struct(0, 1); // bg process
-
-            while (counter_3 == 0 || word != NULL)
+            if (i == temp_command_strings_list_index - 1)
             {
-                if (counter_3 == 0)
-                    word = strtok(command_strings_list[i], " \t");
-                else
-                    word = strtok(NULL, " \t");
-
-                if (word == NULL)
-                    break;
-
-                sp->words = (char **)realloc(sp->words, sizeof(char *) * (sp->num_args + 1));
-                sp->words[++(sp->num_args)] = word;
-
-                counter_3++;
+                fg_command_strings_list = (char **)realloc(fg_command_strings_list, sizeof(char *) * (fg_command_strings_list_index + 1));
+                fg_command_strings_list[fg_command_strings_list_index++] = temp_command_strings_list[i];
             }
-
-            // now add this struct to the structs list
-            commands_list = (shell_command_data_ptr *)realloc(commands_list, sizeof(shell_command_data_ptr) * (commands_index + 1));
-            commands_list[++commands_index] = sp;
+            else
+            {
+                bg_command_strings_list = (char **)realloc(bg_command_strings_list, sizeof(char *) * (bg_command_strings_list_index + 1));
+                bg_command_strings_list[bg_command_strings_list_index++] = temp_command_strings_list[i];
+            }
         }
 
-        counter_1++;
+        free(temp_command_strings_list);
     }
 
-    return commands_list;
-}
+    free(command_tokens_semicolon_list);
 
+    // now loop over each list, tokenise wrt whitespaces, converting each command string into a struct, and add it to the struct list
+    for (int i = 0; i < fg_command_strings_list_index; i++)
+    {
+        shell_command_data_ptr sp = create_shell_command_struct(0, 0);
+        int counter_3 = 0;
+        char *word;
+        while (counter_3 == 0 || word != NULL)
+        {
+            if (counter_3 == 0)
+                word = strtok(fg_command_strings_list[i], " \t");
+            else
+                word = strtok(NULL, " \t");
+
+            if (word == NULL)
+                break;
+
+            sp->words = (char **)realloc(sp->words, sizeof(char *) * (sp->num_args + 1));
+            sp->words[(sp->num_args)++] = word;
+
+            counter_3++;
+        }
+
+        command_structs_list = (shell_command_data_ptr *)realloc(command_structs_list, sizeof(shell_command_data_ptr) * (command_structs_list_index + 1));
+        command_structs_list[command_structs_list_index++] = sp;
+    }
+
+    free(fg_command_strings_list);
+
+    for (int i = 0; i < bg_command_strings_list_index; i++)
+    {
+        shell_command_data_ptr sp = create_shell_command_struct(0, 1);
+        int counter_3 = 0;
+        char *word;
+        while (counter_3 == 0 || word != NULL)
+        {
+            if (counter_3 == 0)
+                word = strtok(bg_command_strings_list[i], " \t");
+            else
+                word = strtok(NULL, " \t");
+
+            if (word == NULL)
+                break;
+
+            sp->words = (char **)realloc(sp->words, sizeof(char *) * (sp->num_args + 1));
+            sp->words[(sp->num_args)++] = word;
+
+            counter_3++;
+        }
+
+        command_structs_list = (shell_command_data_ptr *)realloc(command_structs_list, sizeof(shell_command_data_ptr) * (command_structs_list_index + 1));
+        command_structs_list[command_structs_list_index++] = sp;
+    }
+
+    free(bg_command_strings_list);
+
+    (*num_commands) = command_structs_list_index;
+
+    for (int i = 0; i < *num_commands; i++)
+    {
+        if (command_structs_list[i]->fg_or_bg == 0)
+            printf("fg process:: ");
+        else
+            printf("bg process:: ");
+
+        for (int j = 0; j < command_structs_list[i]->num_args; j++)
+        {
+            printf("%s+", command_structs_list[i]->words[j]);
+        }
+        printf("\n");
+    }
+
+    return command_structs_list;
+}
 
 // instead of nested tokenising do ; first then & then spaces
 // tokenise wrt ;, make tokens list
