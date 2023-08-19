@@ -12,6 +12,6 @@
 #include "warp.h"
 
 extern char *home_directory;
-extern char *old_pwd;
+extern char old_pwd[4096];
 
 #endif

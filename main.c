@@ -1,7 +1,7 @@
 #include "headers.h"
 
 char *home_directory;
-char *old_pwd;
+char old_pwd[4096];
 
 
 int main()
@@ -9,7 +9,7 @@ int main()
     // Keep accepting commands
 
     home_directory = getcwd(NULL, 0);
-    old_pwd = NULL;
+    old_pwd[0] = '\0';
 
     while (1)
     {
