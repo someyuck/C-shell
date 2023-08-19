@@ -1,11 +1,14 @@
 #include "headers.h"
 
-void prompt(char *home_directory)
+
+void prompt()
 {
     // Do not hardcode the prmopt
     // printf("<Everything is a file> ");
 
     // handling user name and hostname
+
+    // printf("!%s!\n", home_directory);
 
     char *username = getlogin();
     if (username == NULL)
@@ -17,6 +20,7 @@ void prompt(char *home_directory)
     // handling pwd path
 
     char *present_working_directory = getcwd(NULL, 0);
+    printf("pwd: %s\n", present_working_directory);
     int home_dir_path_length = strlen(home_directory);
     int pwd_path_length = strlen(present_working_directory);
     int is_pwd_in_home_dir = 1;

@@ -9,5 +9,9 @@
 
 #include "prompt.h"
 #include "parse_input.h"
+#include "warp.h"
+
+extern char *home_directory;
+extern char *old_pwd;
 
 #endif
