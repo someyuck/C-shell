@@ -43,7 +43,7 @@ void warp(char **args, int num_args)
         {
             args[i] += 1; // skip the starting '~'
             int total_path_length = strlen(home_directory) + strlen(args[i]);
-            char *total_path = (char *)malloc(sizeof(char) * total_path_length);
+            char *total_path = (char *)malloc(sizeof(char) * (total_path_length + 1));
             strcpy(total_path, home_directory);
             strcat(total_path, args[i]);
 
