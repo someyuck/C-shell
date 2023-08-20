@@ -6,10 +6,14 @@
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 #include "prompt.h"
 #include "parse_input.h"
 #include "warp.h"
+#include "peek.h"
 
 extern char *home_directory;
 extern char old_pwd[4096];

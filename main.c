@@ -23,6 +23,10 @@ int main()
         {
             warp(commands[0]->words, commands[0]->num_args);
         }
+        else if(strcmp(commands[0]->words[0], "peek") == 0)
+        {
+            peek(commands[0]->words, commands[0]->num_args);
+        }
     }
 
     free(home_directory);
