@@ -1,20 +1,13 @@
 #include "headers.h"
 
+int comparator(const void *a, const void *b)
+{
+    return strcmp(*((char **)a), *((char **)b));
+}
+
 void peek(char **args, int num_args)
 {
     int flag_status[] = {0, 0}; // representing whether flags -a and -l are present or not; 0 meaning no, 1 meaning yes.
-
-    // int option;
-    // args += 1; // skip the 'peek' keyword so the only possible non-option argument is the path name
-
-    // while ((option = getopt(num_args - 1, args, "la")) != -1) // && != '?' for error handling?
-    // {
-    //     printf("getopt: %c\n", option);
-    //     if (option == 'a')
-    //         flag_status[0] = 1;
-    //     else if (option == 'l')
-    //         flag_status[1] = 1;
-    // }
 
     for (int i = 1; i < num_args; i++)
     {
@@ -61,7 +54,6 @@ void peek(char **args, int num_args)
                 is_path_arg_present = 1;
         }
     }
-    // num_args -= 1;
 
     // now last arg in args is pathname, so handle '~' and '-', rest are relative paths so that's fine
     char *dir_path;
@@ -111,8 +103,9 @@ void peek(char **args, int num_args)
     }
     else
     {
-        char **entry_strings_list;
+        char **entry_strings_list = NULL;
         int entry_strings_list_index = 0;
+        long int total_blocks = 0;
 
         if ((entry = readdir(dir_ptr)) == NULL)
         {
@@ -126,6 +119,10 @@ void peek(char **args, int num_args)
                 if (flag_status[0] == 0 && entry->d_name[0] == '.') // skip hidden files, '.' and '..' if '-a' flag not there
                     continue;
 
+                entry_strings_list = (char **)realloc(entry_strings_list, sizeof(char *) * (entry_strings_list_index + 1));
+                entry_strings_list[entry_strings_list_index] = (char *)malloc(sizeof(char) * (strlen(entry->d_name) + 1));
+                strcpy(entry_strings_list[entry_strings_list_index++], entry->d_name);
+
                 char *entry_full_path = (char *)malloc(sizeof(char *) * (strlen(dir_path) + 1 + strlen(entry->d_name) + 1));
                 strcpy(entry_full_path, dir_path);
                 strcat(entry_full_path, "/");
@@ -133,51 +130,94 @@ void peek(char **args, int num_args)
 
                 struct stat *entry_stat_ptr = (struct stat *)malloc(sizeof(struct stat));
                 stat(entry_full_path, entry_stat_ptr);
-                
-                char *entry_string;
-                if(flag_status[1] == 1)
+
+                total_blocks += (entry_stat_ptr->st_blocks) / 2;
+
+                free(entry_full_path);
+                free(entry_stat_ptr);
+            }
+
+            printf("total %ld\n", total_blocks);
+
+            // sort based on names
+            qsort(entry_strings_list, entry_strings_list_index, sizeof(char *), comparator);
+            // now add info based on -l flag
+
+            for (int i = 0; i < entry_strings_list_index; i++)
+            {
+                char *entry_full_path = (char *)malloc(sizeof(char *) * (strlen(dir_path) + 1 + strlen(entry_strings_list[i]) + 1));
+                strcpy(entry_full_path, dir_path);
+                strcat(entry_full_path, "/");
+                strcat(entry_full_path, entry_strings_list[i]);
+
+                struct stat *entry_stat_ptr = (struct stat *)malloc(sizeof(struct stat));
+                stat(entry_full_path, entry_stat_ptr);
+
+                char *file_info_string;
+                if (flag_status[1] == 1)
                 {
                     char perms[11];
                     perms[10] = '\0';
 
-                    if (S_ISDIR(entry_stat_ptr->st_mode)) perms[0] = 'd';
-                    else if(S_ISLNK(entry_stat_ptr->st_mode)) perms[0] = 'l';
-                    else perms[0] = '-';
-                    
+                    if (S_ISDIR(entry_stat_ptr->st_mode))
+                        perms[0] = 'd';
+                    else if (S_ISLNK(entry_stat_ptr->st_mode))
+                        perms[0] = 'l';
+                    else
+                        perms[0] = '-';
+
                     // user perms
-                    if(entry_stat_ptr->st_mode & S_IRUSR) perms[1] = 'r';
-                    else perms[1] = '-';
+                    if (entry_stat_ptr->st_mode & S_IRUSR)
+                        perms[1] = 'r';
+                    else
+                        perms[1] = '-';
 
-                    if(entry_stat_ptr->st_mode & S_IWUSR) perms[2] = 'w';
-                    else perms[2] = '-';
+                    if (entry_stat_ptr->st_mode & S_IWUSR)
+                        perms[2] = 'w';
+                    else
+                        perms[2] = '-';
 
-                    if(entry_stat_ptr->st_mode & S_IXUSR) perms[3] = 'x';
-                    else perms[3] = '-';
+                    if (entry_stat_ptr->st_mode & S_IXUSR)
+                        perms[3] = 'x';
+                    else
+                        perms[3] = '-';
 
                     // group perms
-                    if(entry_stat_ptr->st_mode & S_IRGRP) perms[4] = 'r';
-                    else perms[4] = '-';
+                    if (entry_stat_ptr->st_mode & S_IRGRP)
+                        perms[4] = 'r';
+                    else
+                        perms[4] = '-';
 
-                    if(entry_stat_ptr->st_mode & S_IWGRP) perms[5] = 'w';
-                    else perms[5] = '-';
+                    if (entry_stat_ptr->st_mode & S_IWGRP)
+                        perms[5] = 'w';
+                    else
+                        perms[5] = '-';
 
-                    if(entry_stat_ptr->st_mode & S_IXGRP) perms[6] = 'x';
-                    else perms[6] = '-';
+                    if (entry_stat_ptr->st_mode & S_IXGRP)
+                        perms[6] = 'x';
+                    else
+                        perms[6] = '-';
 
                     // others perms
-                    if(entry_stat_ptr->st_mode & S_IROTH) perms[7] = 'r';
-                    else perms[7] = '-';
+                    if (entry_stat_ptr->st_mode & S_IROTH)
+                        perms[7] = 'r';
+                    else
+                        perms[7] = '-';
 
-                    if(entry_stat_ptr->st_mode & S_IWOTH) perms[8] = 'w';
-                    else perms[8] = '-';
+                    if (entry_stat_ptr->st_mode & S_IWOTH)
+                        perms[8] = 'w';
+                    else
+                        perms[8] = '-';
 
-                    if(entry_stat_ptr->st_mode & S_IXOTH) perms[9] = 'x';
-                    else perms[9] = '-';
+                    if (entry_stat_ptr->st_mode & S_IXOTH)
+                        perms[9] = 'x';
+                    else
+                        perms[9] = '-';
 
                     // number of links to file
-                    int length_nlinks = snprintf(NULL, 0,   "%d", entry_stat_ptr->st_nlink);
-                    char *nlinks = (char*)malloc(sizeof(char)*(length_nlinks + 1));
-                    snprintf(nlinks, length_nlinks + 1, "%d", entry_stat_ptr->st_nlink);
+                    int length_nlinks = snprintf(NULL, 0, "%ld", entry_stat_ptr->st_nlink);
+                    char *nlinks = (char *)malloc(sizeof(char) * (length_nlinks + 1));
+                    snprintf(nlinks, length_nlinks + 1, "%ld", entry_stat_ptr->st_nlink);
 
                     // user name of owner
                     struct passwd *pw_user = getpwuid(entry_stat_ptr->st_uid);
@@ -188,37 +228,63 @@ void peek(char **args, int num_args)
                     char *gname = gr_group->gr_name;
 
                     // file size on bytes
-                    int length_size = snprintf(NULL, 0, "%d", entry_stat_ptr->st_blocks * 512);
-                    char *size_bytes = (char*)malloc(sizeof(char)*(length_size + 1));
-                    snprintf(size_bytes, length_size + 1, "%d", entry_stat_ptr->st_blocks);
+                    int length_size = snprintf(NULL, 0, "%8ld", entry_stat_ptr->st_size); // %8ld to indent
+                    char *size_bytes = (char *)malloc(sizeof(char) * (length_size + 1));
+                    snprintf(size_bytes, length_size + 1, "%8ld", entry_stat_ptr->st_size);
 
-                    ;
+                    // last modification time
+                    struct tm *time_st = localtime(&(entry_stat_ptr->st_mtime));
+                    char mod_date_time[13];
+                    strftime(mod_date_time, 13, "%b %d %H:%M", time_st);
 
-                
+                    file_info_string = (char *)malloc(sizeof(char) * (strlen(perms) + 1 + strlen(nlinks) + 1 + strlen(uname) + 1 + strlen(gname) + 1 + strlen(size_bytes) + 1 + strlen(mod_date_time) + 1 + 1)); // spaces in between
+                    strcpy(file_info_string, perms);
+                    strcat(file_info_string, " ");
+                    strcat(file_info_string, nlinks);
+                    strcat(file_info_string, " ");
+                    strcat(file_info_string, uname);
+                    strcat(file_info_string, " ");
+                    strcat(file_info_string, gname);
+                    strcat(file_info_string, " ");
+                    strcat(file_info_string, size_bytes);
+                    strcat(file_info_string, " ");
+                    strcat(file_info_string, mod_date_time);
+                    strcat(file_info_string, " ");
 
+                    // printf("\n%s", file_info_string);
 
+                    free(nlinks);
+                    free(size_bytes);
+                }
+                else
+                {
+                    file_info_string = (char *)malloc(sizeof(char) * 1);
+                    file_info_string[0] = '\0';
                 }
 
                 if (S_ISDIR(entry_stat_ptr->st_mode))
                 {
-                    printf("\033[1;34m%s\033[0m ", entry->d_name);
+                    printf("%s\033[1;34m%s\033[0m ", file_info_string, entry_strings_list[i]);
                 }
                 else if (S_ISREG(entry_stat_ptr->st_mode))
                 {
                     if (entry_stat_ptr->st_mode & S_IXUSR)
                     {
-                        printf("\033[1;32m%s\033[0m ", entry->d_name);
+                        printf("%s\033[1;32m%s\033[0m ", file_info_string, entry_strings_list[i]);
                     }
                     else
                     {
-                        printf("\033[1;37m%s\033[0m ", entry->d_name);
+                        printf("%s\033[1;37m%s\033[0m ", file_info_string, entry_strings_list[i]);
                     }
                 }
+                if (flag_status[1] == 1)
+                    printf("\n");
 
                 free(entry_full_path);
                 free(entry_stat_ptr);
             }
-            printf("\n");
+            if (flag_status[1] == 0)
+                printf("\n");
         }
     }
     closedir(dir_ptr);
