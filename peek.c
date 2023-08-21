@@ -109,8 +109,11 @@ void peek(char **args, int num_args)
     {
         printf("unable to open directory: %s\n", dir_path);
     }
-    else if (flag_status[0] == 0 && flag_status[1] == 0)
+    else
     {
+        char **entry_strings_list;
+        int entry_strings_list_index = 0;
+
         if ((entry = readdir(dir_ptr)) == NULL)
         {
             printf("error in readdir\n");
@@ -120,18 +123,82 @@ void peek(char **args, int num_args)
             rewinddir(dir_ptr);
             while ((entry = readdir(dir_ptr)) != NULL)
             {
-                if (entry->d_name[0] == '.')
+                if (flag_status[0] == 0 && entry->d_name[0] == '.') // skip hidden files, '.' and '..' if '-a' flag not there
                     continue;
+
                 char *entry_full_path = (char *)malloc(sizeof(char *) * (strlen(dir_path) + 1 + strlen(entry->d_name) + 1));
                 strcpy(entry_full_path, dir_path);
                 strcat(entry_full_path, "/");
                 strcat(entry_full_path, entry->d_name);
 
-                // printf("##%s##\n", entry_full_path);
-
                 struct stat *entry_stat_ptr = (struct stat *)malloc(sizeof(struct stat));
                 stat(entry_full_path, entry_stat_ptr);
-                stat(entry->d_name, entry_stat_ptr);
+                
+                char *entry_string;
+                if(flag_status[1] == 1)
+                {
+                    char perms[11];
+                    perms[10] = '\0';
+
+                    if (S_ISDIR(entry_stat_ptr->st_mode)) perms[0] = 'd';
+                    else if(S_ISLNK(entry_stat_ptr->st_mode)) perms[0] = 'l';
+                    else perms[0] = '-';
+                    
+                    // user perms
+                    if(entry_stat_ptr->st_mode & S_IRUSR) perms[1] = 'r';
+                    else perms[1] = '-';
+
+                    if(entry_stat_ptr->st_mode & S_IWUSR) perms[2] = 'w';
+                    else perms[2] = '-';
+
+                    if(entry_stat_ptr->st_mode & S_IXUSR) perms[3] = 'x';
+                    else perms[3] = '-';
+
+                    // group perms
+                    if(entry_stat_ptr->st_mode & S_IRGRP) perms[4] = 'r';
+                    else perms[4] = '-';
+
+                    if(entry_stat_ptr->st_mode & S_IWGRP) perms[5] = 'w';
+                    else perms[5] = '-';
+
+                    if(entry_stat_ptr->st_mode & S_IXGRP) perms[6] = 'x';
+                    else perms[6] = '-';
+
+                    // others perms
+                    if(entry_stat_ptr->st_mode & S_IROTH) perms[7] = 'r';
+                    else perms[7] = '-';
+
+                    if(entry_stat_ptr->st_mode & S_IWOTH) perms[8] = 'w';
+                    else perms[8] = '-';
+
+                    if(entry_stat_ptr->st_mode & S_IXOTH) perms[9] = 'x';
+                    else perms[9] = '-';
+
+                    // number of links to file
+                    int length_nlinks = snprintf(NULL, 0,   "%d", entry_stat_ptr->st_nlink);
+                    char *nlinks = (char*)malloc(sizeof(char)*(length_nlinks + 1));
+                    snprintf(nlinks, length_nlinks + 1, "%d", entry_stat_ptr->st_nlink);
+
+                    // user name of owner
+                    struct passwd *pw_user = getpwuid(entry_stat_ptr->st_uid);
+                    char *uname = pw_user->pw_name;
+
+                    // group name of owner
+                    struct group *gr_group = getgrgid(entry_stat_ptr->st_gid);
+                    char *gname = gr_group->gr_name;
+
+                    // file size on bytes
+                    int length_size = snprintf(NULL, 0, "%d", entry_stat_ptr->st_blocks * 512);
+                    char *size_bytes = (char*)malloc(sizeof(char)*(length_size + 1));
+                    snprintf(size_bytes, length_size + 1, "%d", entry_stat_ptr->st_blocks);
+
+                    ;
+
+                
+
+
+                }
+
                 if (S_ISDIR(entry_stat_ptr->st_mode))
                 {
                     printf("\033[1;34m%s\033[0m ", entry->d_name);

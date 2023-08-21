@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include "prompt.h"
 #include "parse_input.h"
