@@ -2,6 +2,8 @@
 
 char *home_directory;
 char old_pwd[4096];
+pid_t shell_pid;
+
 
 
 int main()
@@ -10,6 +12,7 @@ int main()
 
     home_directory = getcwd(NULL, 0);
     old_pwd[0] = '\0';
+    shell_pid = getpid();
 
     while (1)
     {
@@ -26,6 +29,10 @@ int main()
         else if(strcmp(commands[0]->words[0], "peek") == 0)
         {
             peek(commands[0]->words, commands[0]->num_args);
+        }
+        else if(strcmp(commands[0]->words[0], "proclore") == 0)
+        {
+            proclore(commands[0]->words, commands[0]->num_args);
         }
     }
 

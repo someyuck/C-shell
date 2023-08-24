@@ -12,6 +12,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include "time.h"
+#include "proclore.h"
 
 #include "prompt.h"
 #include "parse_input.h"
@@ -20,5 +21,6 @@
 
 extern char *home_directory;
 extern char old_pwd[4096];
+extern pid_t shell_pid;
 
 #endif
