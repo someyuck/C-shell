@@ -39,7 +39,6 @@ void proclore(char **args, int num_args)
     long process_group;
     int tpgid;
     unsigned long virtual_memory;
-    char *executable_path;
 
     char *token = NULL;
     int index = 0;
@@ -59,17 +58,17 @@ void proclore(char **args, int num_args)
         }
         else if (index == 4) // group id
         {
-            char *end;
+            // char *end;
             process_group = strtol(token, NULL, 10);
         }
         else if (index == 7) // foreground process group id of terminal
         {
-            char *end;
+            // char *end;
             tpgid = strtol(token, NULL, 10);
         }
         else if (index == 22) // virtual memory
         {
-            char *end;
+            // char *end;
             virtual_memory = strtoul(token, NULL, 10);
         }
 

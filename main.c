@@ -3,8 +3,11 @@
 char *home_directory;
 char old_pwd[4096];
 pid_t shell_pid;
-
-
+char *long_fg_process;
+int long_fg_process_strlen;
+int long_fg_process_duration;
+pid_t *bg_processes;
+int bg_processes_count;
 
 int main()
 {
@@ -23,17 +26,29 @@ int main()
         fgets(input, 4096, stdin);
         int num_commands;
         shell_command_data_ptr *commands = parse_input(input, strlen(input), &num_commands);
-        if(strcmp(commands[0]->words[0], "warp") == 0)
+
+        for (int i = 0; i < num_commands; i++)
         {
-            warp(commands[0]->words, commands[0]->num_args);
-        }
-        else if(strcmp(commands[0]->words[0], "peek") == 0)
-        {
-            peek(commands[0]->words, commands[0]->num_args);
-        }
-        else if(strcmp(commands[0]->words[0], "proclore") == 0)
-        {
-            proclore(commands[0]->words, commands[0]->num_args);
+            if (commands[i] == NULL || commands[i]->num_args == 0)
+            {
+                continue;
+            }
+            else if (strcmp(commands[i]->words[0], "warp") == 0)
+            {
+                warp(commands[i]->words, commands[i]->num_args);
+            }
+            else if (strcmp(commands[i]->words[0], "peek") == 0)
+            {
+                peek(commands[i]->words, commands[i]->num_args);
+            }
+            else if (strcmp(commands[i]->words[0], "proclore") == 0)
+            {
+                proclore(commands[i]->words, commands[i]->num_args);
+            }
+            else
+            {
+                system_command(commands[i]);
+            }
         }
     }
 

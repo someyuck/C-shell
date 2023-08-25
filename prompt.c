@@ -58,7 +58,7 @@ void prompt()
         char *pwd_copy = present_working_directory;
         present_working_directory += home_dir_path_length;
         strcat(relative_path_of_pwd, present_working_directory);
-        
+
         free(pwd_copy);
     }
     else if (is_pwd_in_home_dir == -1)
@@ -73,10 +73,18 @@ void prompt()
     {
         // use full path i.e. present_working_directory
         relative_path_of_pwd = present_working_directory;
-
     }
 
-    printf("<\033[1;34m%s\033[0m@\033[1;32m%s\033[0m:\033[1;37m%s\033[0m> ", username, hostname, relative_path_of_pwd);
-
-    free(relative_path_of_pwd);    
+    if (long_fg_process == NULL) // from system_commands.c, fg processes longer than 2s
+    {
+        printf("<\033[1;34m%s\033[0m@\033[1;32m%s\033[0m:\033[1;31m%s\033[0m> ", username, hostname, relative_path_of_pwd);
+    }
+    else{
+        printf("<\033[1;34m%s\033[0m@\033[1;32m%s\033[0m:\033[1;31m%s\033[0m %s%ds> ", username, hostname, relative_path_of_pwd, long_fg_process, long_fg_process_duration);
+        free(long_fg_process);
+        long_fg_process = NULL;
+        long_fg_process_duration = -1;
+        long_fg_process_strlen = 0;
+    }
+    free(relative_path_of_pwd);
 }

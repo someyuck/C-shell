@@ -137,7 +137,8 @@ void peek(char **args, int num_args)
                 free(entry_stat_ptr);
             }
 
-            printf("total %ld\n", total_blocks);
+            if (flag_status[1] == 1)
+                printf("total %ld\n", total_blocks);
 
             // sort based on names
             qsort(entry_strings_list, entry_strings_list_index, sizeof(char *), comparator);
