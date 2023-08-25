@@ -12,12 +12,13 @@
 #include <pwd.h>
 #include <grp.h>
 #include "time.h"
-#include "proclore.h"
+#include <errno.h>
 
 #include "prompt.h"
 #include "parse_input.h"
 #include "warp.h"
 #include "peek.h"
+#include "proclore.h"
 
 extern char *home_directory;
 extern char old_pwd[4096];

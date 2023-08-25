@@ -13,6 +13,7 @@ int main()
     home_directory = getcwd(NULL, 0);
     old_pwd[0] = '\0';
     shell_pid = getpid();
+    printf("shell pid:%d\n", shell_pid);
 
     while (1)
     {
