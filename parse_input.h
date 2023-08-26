@@ -13,7 +13,8 @@ struct shell_command_data
 typedef struct shell_command_data *shell_command_data_ptr;
 
 shell_command_data_ptr create_shell_command_struct(int num_args, int fg_or_bg);
-void destroy_shell_command_struct(shell_command_data_ptr *spp);
+void destroy_shell_command_struct(shell_command_data_ptr spp);
+char *trim(char str[], int len, int *new_len);
 
 shell_command_data_ptr *parse_input(char *input_string, int len, int *num_commands);
 

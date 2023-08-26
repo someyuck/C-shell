@@ -23,6 +23,9 @@
 #include "peek.h"
 #include "proclore.h"
 #include "system_commands.h"
+#include "pastevents.h"
+
+#include "utils.h"
 
 extern char *home_directory;
 extern char old_pwd[4096];
@@ -32,7 +35,14 @@ extern char *long_fg_process;
 extern int long_fg_process_strlen;
 extern int long_fg_process_duration;
 
-extern pid_t *bg_processes;
+
+#define MAX_BG_PROCESSES_TRACKED 15
+extern pid_t bg_proc_pids[MAX_BG_PROCESSES_TRACKED];
+extern char* bg_proc_names[MAX_BG_PROCESSES_TRACKED];
 extern int bg_processes_count;
+
+extern char *latest_prompt_input; // initialised in main
+extern char **latest_commands_list; // initialised in parse_input()
+extern int num_latest_commands; // initialised in parse_input()
 
 #endif

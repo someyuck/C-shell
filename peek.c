@@ -160,12 +160,22 @@ void peek(char **args, int num_args)
                     char perms[11];
                     perms[10] = '\0';
 
-                    if (S_ISDIR(entry_stat_ptr->st_mode))
+                    if (S_ISREG(entry_stat_ptr->st_mode))
+                        perms[0] = '-';
+                    else if (S_ISDIR(entry_stat_ptr->st_mode))
                         perms[0] = 'd';
+                    else if (S_ISCHR(entry_stat_ptr->st_mode))
+                        perms[0] = 'c';
+                    else if (S_ISBLK(entry_stat_ptr->st_mode))
+                        perms[0] = 'b';
+                    else if (S_ISFIFO(entry_stat_ptr->st_mode))
+                        perms[0] = 'p';
                     else if (S_ISLNK(entry_stat_ptr->st_mode))
                         perms[0] = 'l';
+                    else if ((entry_stat_ptr->st_mode & __S_IFMT) == __S_IFSOCK) // IS_SOCK not there in stat.h
+                        perms[0] = 's';
                     else
-                        perms[0] = '-';
+                        perms[0] = '?';
 
                     // user perms
                     if (entry_stat_ptr->st_mode & S_IRUSR)
@@ -267,16 +277,17 @@ void peek(char **args, int num_args)
                 {
                     printf("%s\033[1;34m%s\033[0m ", file_info_string, entry_strings_list[i]);
                 }
-                else if (S_ISREG(entry_stat_ptr->st_mode))
+                else if (S_ISREG(entry_stat_ptr->st_mode) && (entry_stat_ptr->st_mode & S_IXUSR))
                 {
-                    if (entry_stat_ptr->st_mode & S_IXUSR)
-                    {
-                        printf("%s\033[1;32m%s\033[0m ", file_info_string, entry_strings_list[i]);
-                    }
-                    else
-                    {
-                        printf("%s\033[1;37m%s\033[0m ", file_info_string, entry_strings_list[i]);
-                    }
+                    printf("%s\033[1;32m%s\033[0m ", file_info_string, entry_strings_list[i]);
+                }
+                else if (S_ISLNK(entry_stat_ptr->st_mode))
+                {
+                    printf("%s\036[1;32m%s\033[0m ", file_info_string, entry_strings_list[i]);
+                }
+                else
+                {
+                    printf("%s\033[1;37m%s\033[0m ", file_info_string, entry_strings_list[i]);
                 }
                 if (flag_status[1] == 1)
                     printf("\n");

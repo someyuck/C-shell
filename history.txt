@@ -1,0 +1,13 @@
+ ls ;
+ ls ;
+DV
+ ls ;
+ ls ;
+ ls ;
+ peek ;
+:
+ ls ;
+ŠµA
+ ls ;
+¦DV
+ ls ;

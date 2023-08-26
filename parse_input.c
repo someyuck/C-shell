@@ -9,20 +9,55 @@ shell_command_data_ptr create_shell_command_struct(int num_args, int fg_or_bg)
     return sp;
 }
 
-void destroy_shell_command_struct(shell_command_data_ptr *spp)
+void destroy_shell_command_struct(shell_command_data_ptr spp)
 {
-    for (int i = 0; i < (*spp)->num_args; i++)
-    {
-        free((*spp)->words[i]);
-    }
-    free((*spp)->words);
-    free((*spp));
+    free(spp->words);
     free(spp);
 }
+
+char *trim(char str[], int len, int *new_len)
+{
+    char *new;
+
+    // leading whitespaces
+    int i = 0;
+    while (i < len)
+    {
+        if (str[i] != ' ' && str[i] != '\n' && str[i] != '\t' && str[i] != '\v' && str[i] != '\f' && str[i] != '\r')
+            break;
+        i++;
+    }
+    if (i == len)
+    {
+        return NULL;
+    }
+
+    // trailing whitespaces
+    int j = len - 1;
+    while (j > i)
+    {
+        if (str[j] != ' ' && str[j] != '\n' && str[j] != '\t' && str[j] != '\v' && str[j] != '\f' && str[j] != '\r')
+            break;
+        j--;
+    }
+
+    new = (char *)malloc(sizeof(char) * (j - i + 1 + 1));
+    for (int x = i; x <= j; x++)
+    {
+        new[x - i] = str[x];
+    }
+    new[j - i + 1] = '\0';
+    *new_len = strlen(new);
+
+    return new;
+}
+
+// first of all, trim the leading and trailing whitespaces.
 
 // first tokenise input string wrt ';', each token of which may or may not contain a background process (&).
 // however, the last command in each token will definitely be a foreground process (either ended with ; or was the last command)
 // then, we tokenise each of these tokens wrt '&', and all but the last ones will be background processes
+// except if there is the bg process at the very end
 
 // once we get hold of individual command strings, we tokenise wrt the whitespace characters (space, tab), to get each individual
 // word. we store these words in the struct defined in parse_input.h
@@ -30,7 +65,11 @@ void destroy_shell_command_struct(shell_command_data_ptr *spp)
 
 shell_command_data_ptr *parse_input(char *input_string, int len, int *num_commands)
 {
-    input_string[len - 1] = '\0'; // to skip the last '\n'
+    input_string = trim(input_string, len, &len);
+    if (input_string == NULL)
+    {
+        return NULL;
+    }
 
     shell_command_data_ptr *command_structs_list = NULL; // realloc this array for new command structs
     int command_structs_list_index = 0;
@@ -60,13 +99,17 @@ shell_command_data_ptr *parse_input(char *input_string, int len, int *num_comman
         counter_1++;
     }
 
+    int is_last_command_bg = 0;
+    if (command_tokens_semicolon_list[command_tokens_semicolon_list_index - 1][strlen(command_tokens_semicolon_list[command_tokens_semicolon_list_index - 1]) - 1] == '&')
+    {
+        is_last_command_bg = 1;
+    }
     // now loop over this list, tokenise each token wrt '&', and add all but the last command string to the list for bg processes
     // and the last one to the fg list
 
-    char **fg_command_strings_list = NULL;
-    int fg_command_strings_list_index = 0;
-    char **bg_command_strings_list = NULL;
-    int bg_command_strings_list_index = 0;
+    char **command_strings_list = NULL;
+    int command_strings_list_index = 0;
+    int *is_command_fg_or_bg = NULL; // 0 for fg, 1 for bg
 
     for (int i = 0; i < command_tokens_semicolon_list_index; i++)
     {
@@ -93,19 +136,24 @@ shell_command_data_ptr *parse_input(char *input_string, int len, int *num_comman
             counter_2++;
         }
 
-        // add all but the last one to the bg list and the last one to fg list
-        for (int i = 0; i < temp_command_strings_list_index; i++)
+        // mark all but the last as bg  and the last as fg (for last i, only if it's fg)
+        for (int j = 0; j < temp_command_strings_list_index; j++)
         {
-            if (i == temp_command_strings_list_index - 1)
+            command_strings_list = (char **)realloc(command_strings_list, sizeof(char *) * (command_strings_list_index + 1));
+            command_strings_list[command_strings_list_index] = temp_command_strings_list[j];
+            is_command_fg_or_bg = (int *)realloc(is_command_fg_or_bg, sizeof(int) * (command_strings_list_index + 1));
+
+            if ((j == temp_command_strings_list_index - 1 && i != command_tokens_semicolon_list_index - 1) || (j == temp_command_strings_list_index - 1 && i == command_tokens_semicolon_list_index - 1 && is_last_command_bg == 0))
             {
-                fg_command_strings_list = (char **)realloc(fg_command_strings_list, sizeof(char *) * (fg_command_strings_list_index + 1));
-                fg_command_strings_list[fg_command_strings_list_index++] = temp_command_strings_list[i];
+                is_command_fg_or_bg[command_strings_list_index++] = 0; // fg
             }
             else
-            {
-                bg_command_strings_list = (char **)realloc(bg_command_strings_list, sizeof(char *) * (bg_command_strings_list_index + 1));
-                bg_command_strings_list[bg_command_strings_list_index++] = temp_command_strings_list[i];
-            }
+                is_command_fg_or_bg[command_strings_list_index++] = 1; // bg
+
+            // add the command string to the global var latest_commands_list
+            latest_commands_list = (char **)realloc(latest_commands_list, sizeof(char *) * (num_latest_commands + 1));
+            latest_commands_list[num_latest_commands] = (char *)malloc(sizeof(char) * (strlen(temp_command_strings_list[j]) + 1));
+            strcpy(latest_commands_list[num_latest_commands++], temp_command_strings_list[j]);
         }
 
         free(temp_command_strings_list);
@@ -113,16 +161,16 @@ shell_command_data_ptr *parse_input(char *input_string, int len, int *num_comman
 
     free(command_tokens_semicolon_list);
 
-    // now loop over each list, tokenise wrt whitespaces, converting each command string into a struct, and add it to the struct list
-    for (int i = 0; i < fg_command_strings_list_index; i++)
+    // now loop over the list, tokenise wrt whitespaces, converting each command string into a struct, and add it to the struct list, marking fg or bg as appropriate
+    for (int i = 0; i < command_strings_list_index; i++)
     {
-        shell_command_data_ptr sp = create_shell_command_struct(0, 0);
+        shell_command_data_ptr sp = create_shell_command_struct(0, is_command_fg_or_bg[i]);
         int counter_3 = 0;
         char *word;
         while (counter_3 == 0 || word != NULL)
         {
             if (counter_3 == 0)
-                word = strtok(fg_command_strings_list[i], " \t");
+                word = strtok(command_strings_list[i], " \t");
             else
                 word = strtok(NULL, " \t");
 
@@ -139,55 +187,10 @@ shell_command_data_ptr *parse_input(char *input_string, int len, int *num_comman
         command_structs_list[command_structs_list_index++] = sp;
     }
 
-    free(fg_command_strings_list);
-
-    for (int i = 0; i < bg_command_strings_list_index; i++)
-    {
-        shell_command_data_ptr sp = create_shell_command_struct(0, 1);
-        int counter_3 = 0;
-        char *word;
-        while (counter_3 == 0 || word != NULL)
-        {
-            if (counter_3 == 0)
-                word = strtok(bg_command_strings_list[i], " \t");
-            else
-                word = strtok(NULL, " \t");
-
-            if (word == NULL)
-                break;
-
-            sp->words = (char **)realloc(sp->words, sizeof(char *) * (sp->num_args + 1));
-            sp->words[(sp->num_args)++] = word;
-
-            counter_3++;
-        }
-
-        command_structs_list = (shell_command_data_ptr *)realloc(command_structs_list, sizeof(shell_command_data_ptr) * (command_structs_list_index + 1));
-        command_structs_list[command_structs_list_index++] = sp;
-    }
-
-    free(bg_command_strings_list);
+    free(command_strings_list);
+    free(is_command_fg_or_bg);
 
     (*num_commands) = command_structs_list_index;
 
-    for (int i = 0; i < *num_commands; i++)
-    {
-        if (command_structs_list[i]->fg_or_bg == 0)
-            printf("fg process:: ");
-        else
-            printf("bg process:: ");
-
-        for (int j = 0; j < command_structs_list[i]->num_args; j++)
-        {
-            printf("%s+", command_structs_list[i]->words[j]);
-        }
-        printf("\n");
-    }
-
     return command_structs_list;
 }
-
-// instead of nested tokenising do ; first then & then spaces
-// tokenise wrt ;, make tokens list
-// loop over tokens list, tokenise wrt &, add command strings to separate lists for fg and bg
-// loop over fg and bg string lists, convert each to a struct and add it to respective struct list

@@ -79,7 +79,8 @@ void prompt()
     {
         printf("<\033[1;34m%s\033[0m@\033[1;32m%s\033[0m:\033[1;31m%s\033[0m> ", username, hostname, relative_path_of_pwd);
     }
-    else{
+    else
+    {
         printf("<\033[1;34m%s\033[0m@\033[1;32m%s\033[0m:\033[1;31m%s\033[0m %s%ds> ", username, hostname, relative_path_of_pwd, long_fg_process, long_fg_process_duration);
         free(long_fg_process);
         long_fg_process = NULL;
