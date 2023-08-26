@@ -63,7 +63,7 @@ char *trim(char str[], int len, int *new_len)
 // word. we store these words in the struct defined in parse_input.h
 // returns an array of structs, each struct corresponding to one command
 
-shell_command_data_ptr *parse_input(char *input_string, int len, int *num_commands)
+shell_command_data_ptr *parse_input(char *input_string, int len, int *num_commands, int update_latest_comm_flag)
 {
     input_string = trim(input_string, len, &len);
     if (input_string == NULL)
@@ -150,6 +150,8 @@ shell_command_data_ptr *parse_input(char *input_string, int len, int *num_comman
             else
                 is_command_fg_or_bg[command_strings_list_index++] = 1; // bg
 
+            if (update_latest_comm_flag == 0)
+                continue;
             // add the command string to the global var latest_commands_list
             latest_commands_list = (char **)realloc(latest_commands_list, sizeof(char *) * (num_latest_commands + 1));
             latest_commands_list[num_latest_commands] = (char *)malloc(sizeof(char) * (strlen(temp_command_strings_list[j]) + 1));

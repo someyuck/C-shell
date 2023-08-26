@@ -13,7 +13,6 @@ char *latest_prompt_input;
 char **latest_commands_list;
 int num_latest_commands;
 
-
 int main()
 {
     // Keep accepting commands
@@ -31,7 +30,6 @@ int main()
     latest_commands_list = NULL;
     num_latest_commands = 0;
 
-
     while (1)
     {
         // Print appropriate prompt with username, systemname and directory before accepting input
@@ -40,7 +38,7 @@ int main()
         char input[4096];
         fgets(input, 4096, stdin);
 
-        latest_prompt_input = (char*)malloc(sizeof(char)*(strlen(input) + 1));
+        latest_prompt_input = (char *)malloc(sizeof(char) * (strlen(input) + 1));
         strcpy(latest_prompt_input, input);
         printf("latest: [%s]\n", latest_prompt_input);
 
@@ -53,36 +51,13 @@ int main()
         }
 
         int num_commands;
-        shell_command_data_ptr *commands = parse_input(input, strlen(input), &num_commands);
+        shell_command_data_ptr *commands = parse_input(input, strlen(input), &num_commands, 1);
 
-        for (int i = 0; i < num_commands; i++)
+        if (commands != NULL)
         {
-            if (commands == NULL)
-            {
-                continue;
-            }
-            else if (strcmp(commands[i]->words[0], "warp") == 0)
-            {
-                warp(commands[i]->words, commands[i]->num_args);
-            }
-            else if (strcmp(commands[i]->words[0], "peek") == 0)
-            {
-                peek(commands[i]->words, commands[i]->num_args);
-            }
-            else if (strcmp(commands[i]->words[0], "proclore") == 0)
-            {
-                proclore(commands[i]->words, commands[i]->num_args);
-            }
-            else if (strcmp(commands[i]->words[0], "pastevents") == 0)
-            {
-                pastevents(commands[i]->words, commands[i]->num_args);
-            }
-            else
-            {
-                system_command(commands[i]);
-            }
+            for (int i = 0; i < num_commands; i++)
+                execute(commands[i]);
         }
-
         // printf("last command :[%s]", input);
         store_commands();
     }

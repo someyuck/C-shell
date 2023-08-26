@@ -30,6 +30,44 @@ void pastevents(char **args, int num_args)
         }
         fclose(fp);
     }
+    else if (num_args == 3 && strcmp(args[1], "execute") == 0)
+    {
+        int num_lines;
+        char **lines = readlines("history.txt", &num_lines);
+        if (lines == NULL) // file not created yet
+        {
+            return;
+        }
+
+        int target_index = strtol(args[2], NULL, 10);
+        if (target_index >= num_lines)
+        {
+            fprintf(stderr, "\033[1;31mpastevents : ERROR: %d commands in file\033[0m\n", num_lines);
+
+            for (int i = 0; i < num_lines; i++)
+                free(lines[i]);
+            free(lines);
+            return;
+        }
+        else
+        {
+            char *target_command = lines[num_lines - target_index];
+
+            int num_comms;
+            shell_command_data_ptr *comms = parse_input(target_command, strlen(target_command), &num_comms, 0);
+
+            for (int i = 0; i < num_comms; i++)
+            {
+                execute(comms[i]); // defined in utils.h
+            }
+        }
+
+        for (int i = 0; i < num_lines; i++)
+        {
+            free(lines[i]);
+        }
+        free(lines);
+    }
 }
 
 void store_commands()
@@ -46,7 +84,7 @@ void store_commands()
     num_latest_commands = 0;
 
     int num_commands;
-    shell_command_data_ptr *commands = parse_input(latest_prompt_input, strlen(latest_prompt_input), &num_commands);
+    shell_command_data_ptr *commands = parse_input(latest_prompt_input, strlen(latest_prompt_input), &num_commands, 1);
 
     int num_lines;
     char **write_list = readlines("history.txt", &num_lines);
@@ -97,9 +135,9 @@ void store_commands()
                 else
                 {
                     char *prev_cmd = write_list[num_lines - prev_process_idx];
-                    write_string = (char *)realloc(write_string, sizeof(char) * (strlen(write_string) + 1 + strlen(prev_cmd + 2)));
+                    write_string = (char *)realloc(write_string, sizeof(char) * (strlen(write_string) + 1 + strlen(prev_cmd) + 2));
                     strcat(write_string, " ");
-                    strcat(write_string, latest_commands_list[i]);
+                    strcat(write_string, prev_cmd);
                 }
             }
         }
