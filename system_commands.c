@@ -14,7 +14,7 @@ void system_command(shell_command_data_ptr command_data_ptr)
     pid_t child_pid = fork();
     if (child_pid < 0)
     {
-        printf("failed fork\n");
+        fprintf(stderr, "\033[1;31mERROR: fork : errorno(%d) : %s\033[0m\n", errno, strerror(errno));
         return;
     }
 
@@ -35,7 +35,7 @@ void system_command(shell_command_data_ptr command_data_ptr)
             }
 
             free(args);
-            exit(1);
+            exit(0);
         }
         else
         {
@@ -59,7 +59,7 @@ void system_command(shell_command_data_ptr command_data_ptr)
 
             if (wait_ret == -1)
             {
-                printf("waitpid error\n");
+                fprintf(stderr, "\033[1;31mERROR: waitpid : errorno(%d) : %s\033[0m\n", errno, strerror(errno));
             }
             else
             {
@@ -110,8 +110,7 @@ void handle_bg_process_exits()
     int pid = waitpid(-1, &status, WNOHANG);
     if (pid == -1)
     {
-        ;
-        // printf("waitpid errno(%d): %s\n", errno, strerror(errno));
+        fprintf(stderr, "bgprocs :%d \033[1;31mERROR: waitpid : errorno(%d) : %s\033[0m\n", bg_processes_count, errno, strerror(errno));
     }
     else if (pid > 0)
     {
@@ -130,6 +129,7 @@ void handle_bg_process_exits()
 
                 bg_proc_pids[i] = -1;
                 free(bg_proc_names[i]);
+                bg_processes_count--;
                 break;
             }
         }

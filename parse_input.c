@@ -90,7 +90,6 @@ shell_command_data_ptr *parse_input(char *input_string, int len, int *num_comman
         if (command_token_semicolon == NULL) // no more tokens
             break;
 
-        // printf("command token wrt ; :::: #%s#\n", command_token_semicolon);
 
         // add this token to tokens list
         command_tokens_semicolon_list = (char **)realloc(command_tokens_semicolon_list, sizeof(char *) * (command_tokens_semicolon_list_index + 1));

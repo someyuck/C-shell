@@ -1,5 +1,15 @@
- warp .. ;
- warp ~ ;
- warp - ;
- warp - ;
-  warp - ;
+ cmatrix ;
+;
+ ls ;
+ cmatrix  &
+ echo "hello"  &
+ ls  &
+ sleep 5 ;
+ sleep 3  &
+ proclore ;
+ proclore 1 ;
+ proclore 2 ;
+ proclore 6677 ;
+ peek -l -a				/home/Desktop ;
+ peek -l -a 				/home/Desktop ;
+ peek -l -a 				/home/someyuck/Desktop ;

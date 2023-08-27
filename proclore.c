@@ -96,8 +96,7 @@ void proclore(char **args, int num_args)
     buffer[4095] = '\0';
     ssize_t exec_path_length = readlink(file_path, buffer, 4095);
     if(exec_path_length == 4095 || exec_path_length == -1){
-        printf("readlink errorno: %d\n", errno);
-        printf("error message: %s\n", strerror(errno));
+        fprintf(stderr, "\033[1;31mERROR: readlink: errno(%d) : %s\033[0m\n", errno, strerror(errno));
         return;
     }
     buffer[exec_path_length] = '\0';

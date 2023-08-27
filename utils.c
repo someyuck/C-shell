@@ -2,10 +2,11 @@
 
 char **readlines(const char *path, int *num_lines)
 {
-    FILE *fp = fopen(path, "r"); // need to read, but created if not exists, and wont be overwritten
+    FILE *fp = fopen(path, "r");
     if (fp == NULL)
     {
-        fprintf(stderr, "\033[1;31mfopen errno(%d): %s\033[0m\n", errno, strerror(errno));
+        int fd = open(path, O_CREAT, 0644);
+        close(fd);
         return NULL;
     }
     char buf[4096 * 20 + 1];
@@ -20,7 +21,7 @@ char **readlines(const char *path, int *num_lines)
         return lines;
     }
 
-    printf("buf: (%s)\n", buf);
+    // printf("buf: (%s)\n", buf);
     char *line = NULL;
     while ((*num_lines) == 0 || line != NULL)
     {
@@ -37,15 +38,24 @@ char **readlines(const char *path, int *num_lines)
         strcpy(lines[(*num_lines)++], line);
     }
 
+    // printf("readlines numlines = %d\n",*num_lines);
+
     return lines;
 }
 
 void writelines(const char *path, char **lines, int num_lines)
 {
     FILE *fp = fopen(path, "w");
+    if (fp == NULL)
+    {
+        int fd = open(path, O_CREAT, 0644);
+        close(fd);
+        FILE *fp = fopen(path, "w");
+    }
     for (int i = 0; i < num_lines; i++)
     {
         fprintf(fp, "%s\n", lines[i]);
+        // printf("lines [%d] : {%s}\n", i, lines[i]);
     }
     fclose(fp);
 }

@@ -26,8 +26,6 @@ void peek(char **args, int num_args)
         }
     }
 
-    printf("flags: %d %d\n", flag_status[0], flag_status[1]);
-
     int is_path_arg_present;
     if ((flag_status[0] + flag_status[1] == 0 && num_args == 1) || (flag_status[0] + flag_status[1] == 1 && num_args == 2))
     {
@@ -39,7 +37,7 @@ void peek(char **args, int num_args)
     }
     else if (flag_status[0] + flag_status[1] == 2)
     {
-        if (strcmp(args[0], "-la") == 0 || strcmp(args[0], "-al") == 0)
+        if (strcmp(args[1], "-la") == 0 || strcmp(args[1], "-al") == 0)
         {
             if (num_args == 2)
                 is_path_arg_present = 0;
@@ -99,7 +97,7 @@ void peek(char **args, int num_args)
     struct dirent *entry;
     if (dir_ptr == NULL)
     {
-        printf("unable to open directory: %s\n", dir_path);
+        fprintf(stderr, "\033[1;31munable to open directory: %s\033[0m\n", dir_path);
     }
     else
     {
@@ -109,7 +107,7 @@ void peek(char **args, int num_args)
 
         if ((entry = readdir(dir_ptr)) == NULL)
         {
-            printf("error in readdir\n");
+            fprintf(stderr, "\033[1;31mERROR: readdir: errno(%d) : %s\033[0m\n", errno, strerror(errno));
         }
         else
         {
@@ -226,17 +224,21 @@ void peek(char **args, int num_args)
                         perms[9] = '-';
 
                     // number of links to file
-                    int length_nlinks = snprintf(NULL, 0, "%ld", entry_stat_ptr->st_nlink);
+                    int length_nlinks = snprintf(NULL, 0, "%5ld", entry_stat_ptr->st_nlink);
                     char *nlinks = (char *)malloc(sizeof(char) * (length_nlinks + 1));
-                    snprintf(nlinks, length_nlinks + 1, "%ld", entry_stat_ptr->st_nlink);
+                    snprintf(nlinks, length_nlinks + 1, "%5ld", entry_stat_ptr->st_nlink);
 
                     // user name of owner
                     struct passwd *pw_user = getpwuid(entry_stat_ptr->st_uid);
-                    char *uname = pw_user->pw_name;
+                    int uname_len = snprintf(NULL, 0, "%12s", pw_user->pw_name);
+                    char *uname = (char*)malloc(sizeof(char)*(uname_len + 1));
+                    snprintf(uname, uname_len + 1, "%12s", pw_user->pw_name);
 
                     // group name of owner
                     struct group *gr_group = getgrgid(entry_stat_ptr->st_gid);
-                    char *gname = gr_group->gr_name;
+                    int gname_len = snprintf(NULL, 0, "%12s", gr_group->gr_name);
+                    char *gname = (char*)malloc(sizeof(char)*(gname_len + 1));
+                    snprintf(gname, gname_len +1, "%12s", gr_group->gr_name);
 
                     // file size on bytes
                     int length_size = snprintf(NULL, 0, "%8ld", entry_stat_ptr->st_size); // %8ld to indent

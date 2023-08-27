@@ -40,7 +40,6 @@ int main()
 
         latest_prompt_input = (char *)malloc(sizeof(char) * (strlen(input) + 1));
         strcpy(latest_prompt_input, input);
-        printf("latest: [%s]\n", latest_prompt_input);
 
         // to handle bg processes that exited/terminated:
         for (int j = 0; j < MAX_BG_PROCESSES_TRACKED; j++)
@@ -58,7 +57,6 @@ int main()
             for (int i = 0; i < num_commands; i++)
                 execute(commands[i]);
         }
-        // printf("last command :[%s]", input);
         store_commands();
     }
 
