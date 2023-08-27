@@ -15,44 +15,6 @@ void destroy_shell_command_struct(shell_command_data_ptr spp)
     free(spp);
 }
 
-char *trim(char str[], int len, int *new_len)
-{
-    char *new;
-
-    // leading whitespaces
-    int i = 0;
-    while (i < len)
-    {
-        if (str[i] != ' ' && str[i] != '\n' && str[i] != '\t' && str[i] != '\v' && str[i] != '\f' && str[i] != '\r')
-            break;
-        i++;
-    }
-    if (i == len)
-    {
-        return NULL;
-    }
-
-    // trailing whitespaces
-    int j = len - 1;
-    while (j > i)
-    {
-        if (str[j] != ' ' && str[j] != '\n' && str[j] != '\t' && str[j] != '\v' && str[j] != '\f' && str[j] != '\r')
-            break;
-        j--;
-    }
-
-    new = (char *)malloc(sizeof(char) * (j - i + 1 + 1));
-    for (int x = i; x <= j; x++)
-    {
-        new[x - i] = str[x];
-    }
-    new[j - i + 1] = '\0';
-    *new_len = strlen(new);
-
-    return new;
-}
-
-// first of all, trim the leading and trailing whitespaces.
 
 // first tokenise input string wrt ';', each token of which may or may not contain a background process (&).
 // however, the last command in each token will definitely be a foreground process (either ended with ; or was the last command)
@@ -65,6 +27,7 @@ char *trim(char str[], int len, int *new_len)
 
 shell_command_data_ptr *parse_input(char *input_string, int len, int *num_commands, int update_latest_comm_flag)
 {
+    // first of all, trim the leading and trailing whitespaces.
     input_string = trim(input_string, len, &len);
     if (input_string == NULL)
     {

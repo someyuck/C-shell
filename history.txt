@@ -1,15 +1,15 @@
- cmatrix ;
-;
  ls ;
- cmatrix  &
- echo "hello"  &
- ls  &
- sleep 5 ;
- sleep 3  &
- proclore ;
- proclore 1 ;
- proclore 2 ;
- proclore 6677 ;
- peek -l -a				/home/Desktop ;
- peek -l -a 				/home/Desktop ;
- peek -l -a 				/home/someyuck/Desktop ;
+roject-0-someyuck/Part-2 ;
+ rm a.out ;
+s ;
+ gcc main.c ;
+someyuck/Part-2 ;
+ ./a.out OHjJHljHLHL ;
+uck/Part-2 ;
+ Warp ;
+ prony ;
+HljHLHL ;
+ warp ;
+JHljHLHL ;
+ clear ;
+ ../mini-project-0-someyuck/Part-2/a.out OHoHOJOO ;

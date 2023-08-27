@@ -1,5 +1,44 @@
 #include "headers.h"
 
+char *trim(char str[], int len, int *new_len)
+{
+    char *new;
+
+    // leading whitespaces
+    int i = 0;
+    while (i < len)
+    {
+        if (str[i] != ' ' && str[i] != '\n' && str[i] != '\t' && str[i] != '\v' && str[i] != '\f' && str[i] != '\r')
+            break;
+        i++;
+    }
+    if (i == len)
+    {
+        return NULL;
+    }
+
+    // trailing whitespaces
+    int j = len - 1;
+    while (j > i)
+    {
+        if (str[j] != ' ' && str[j] != '\n' && str[j] != '\t' && str[j] != '\v' && str[j] != '\f' && str[j] != '\r')
+            break;
+        j--;
+    }
+
+    new = (char *)malloc(sizeof(char) * (j - i + 1 + 1));
+    for (int x = i; x <= j; x++)
+    {
+        new[x - i] = str[x];
+    }
+    new[j - i + 1] = '\0';
+    *new_len = strlen(new);
+
+    return new;
+}
+
+
+
 char **readlines(const char *path, int *num_lines)
 {
     FILE *fp = fopen(path, "r");

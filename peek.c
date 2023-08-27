@@ -53,7 +53,7 @@ void peek(char **args, int num_args)
         }
     }
 
-    // now last arg in args is pathname, so handle '~' and '-', rest are relative paths so that's fine
+    // handle '~' and '-', rest are relative paths so that's fine
     char *dir_path;
     if (is_path_arg_present == 1)
     {
