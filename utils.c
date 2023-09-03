@@ -37,8 +37,6 @@ char *trim(char str[], int len, int *new_len)
     return new;
 }
 
-
-
 char **readlines(const char *path, int *num_lines)
 {
     FILE *fp = fopen(path, "r");
@@ -89,7 +87,7 @@ void writelines(const char *path, char **lines, int num_lines)
     {
         int fd = open(path, O_CREAT, 0644);
         close(fd);
-        FILE *fp = fopen(path, "w");
+        fp = fopen(path, "w");
     }
     for (int i = 0; i < num_lines; i++)
     {
@@ -118,6 +116,10 @@ void execute(shell_command_data_ptr comm)
         else if (strcmp(comm->words[0], "pastevents") == 0)
         {
             pastevents(comm->words, comm->num_args);
+        }
+        else if (strcmp(comm->words[0], "seek") == 0)
+        {
+            seek(comm->words, comm->num_args);
         }
         else
         {

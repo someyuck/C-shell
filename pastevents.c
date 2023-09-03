@@ -33,7 +33,7 @@ void pastevents(char **args, int num_args)
         {
             int fd = open(history_path, O_CREAT, 0644);
             close(fd);
-            FILE *fp = fopen(history_path, "w");
+            fp = fopen(history_path, "w");
         }
         fclose(fp);
         free(history_path);

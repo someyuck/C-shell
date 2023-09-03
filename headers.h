@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <sys/dir.h>
 
 #include "prompt.h"
 #include "parse_input.h"
@@ -25,6 +26,7 @@
 #include "proclore.h"
 #include "system_commands.h"
 #include "pastevents.h"
+#include "seek.h"
 
 #include "utils.h"
 
