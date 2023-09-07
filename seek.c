@@ -117,6 +117,7 @@ void seek(char **args, int num_args)
     // search recursively
     char *cwd_save = getcwd(NULL, 0);
     chdir(target_dir);
+    printf("target: %s\n", getcwd(NULL, 0));
     if (is_target_mentioned == 0)
         seekRecursive(args[num_args - 1], target_dir, target_dir, &num_file_matches, &num_dir_matches, &match_if_e_flag, flag_status);
     else if (is_target_mentioned == 1)
@@ -145,36 +146,30 @@ void seek(char **args, int num_args)
         }
     }
 
-    if (flag_status[0] == 1 && flag_status[1] == 0 && flag_status[2] == 1)
+    if (flag_status[0] == 1 && flag_status[1] == 0 && flag_status[2] == 1 && num_file_matches == 1)
     {
-        if (num_file_matches == 1 && num_dir_matches == 0)
+        if (stat_ptr->st_mode & S_IRUSR)
         {
-            if (stat_ptr->st_mode & S_IRUSR)
-            {
-                FILE *fp = fopen(match_if_e_flag, "r");
-                char buf[100];
-                while (fgets(buf, 100, fp) != NULL)
-                    printf("%s", buf);
-                fclose(fp);
-            }
-            else
-                printf("Missing permissions for task!\n");
+            FILE *fp = fopen(match_if_e_flag, "r");
+            char buf[100];
+            while (fgets(buf, 100, fp) != NULL)
+                printf("%s", buf);
+            fclose(fp);
         }
+        else
+            printf("Missing permissions for task!\n");
     }
-    else if (flag_status[0] == 0 && flag_status[1] == 1 && flag_status[2] == 1)
+    else if (flag_status[0] == 0 && flag_status[1] == 1 && flag_status[2] == 1 && num_dir_matches == 1)
     {
-        if (num_file_matches == 0 && num_dir_matches == 1)
+        if (stat_ptr->st_mode & S_IXUSR)
         {
-            if (stat_ptr->st_mode & S_IXUSR)
-            {
-                char *temp = getcwd(NULL, 0);
-                chdir(match_if_e_flag);
-                strcpy(old_pwd, temp);
-                free(temp);
-            }
-            else
-                printf("Missing permissions for task!\n");
+            char *temp = getcwd(NULL, 0);
+            chdir(match_if_e_flag);
+            strcpy(old_pwd, temp);
+            free(temp);
         }
+        else
+            printf("Missing permissions for task!\n");
     }
     else if (flag_status[0] == 0 && flag_status[1] == 0 && flag_status[2] == 1)
     {
@@ -228,10 +223,19 @@ void seekRecursive(char *toSearch, char *OGTargetDirectory, char *targetDirector
         return;
 
     char *cwd = getcwd(NULL, 0);
+    char * cwd1 = getcwd(NULL, 0);
+	char * cwd2 = get_current_dir_name();
+	// printf("cwd1: [%s] cwd2: [%s]\n", cwd1, cwd2);
+	free(cwd1);
+	free(cwd2);
+    // printf("cwd : [%s]\n", cwd);
     for (int i = 0; i < numEntries; i++)
     {
         if (strcmp(entryNames[i]->d_name, ".") == 0 || strcmp(entryNames[i]->d_name, "..") == 0)
+        {
             continue;
+        }
+            // printf("entry : [%s]\n", entryNames[i]->d_name);
 
         char *entryFullPath = (char *)malloc(sizeof(char) * (strlen(cwd) + 1 + strlen(entryNames[i]->d_name) + 1));
         strcpy(entryFullPath, cwd);
@@ -242,6 +246,7 @@ void seekRecursive(char *toSearch, char *OGTargetDirectory, char *targetDirector
         strcpy(pathRelToTarget, "."); // . being rel to target dir
         strcat(pathRelToTarget, entryFullPath + strlen(OGTargetDirectory));
 
+        // printf("[%s] [%s] [%s] [%s]\n", entryFullPath, pathRelToTarget, OGTargetDirectory, toSearch);
         struct stat *stat_ptr = (struct stat *)malloc(sizeof(struct stat));
         int ret = stat(entryFullPath, stat_ptr);
         if (ret == -1)
