@@ -49,6 +49,16 @@ int main()
             handle_bg_process_exits();
         }
 
+        // free up space in global list of latest command strings
+        if (latest_commands_list != NULL)
+        {
+            for (int i = 0; i < num_latest_commands; i++)
+                free(latest_commands_list[i]);
+            free(latest_commands_list);
+            latest_commands_list = NULL;
+            num_latest_commands = 0;
+        }
+
         int num_commands;
         shell_command_data_ptr *commands = parse_input(input, strlen(input), &num_commands, 1);
 

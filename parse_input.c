@@ -11,10 +11,45 @@ shell_command_data_ptr create_shell_command_struct(int num_args, int fg_or_bg)
 
 void destroy_shell_command_struct(shell_command_data_ptr spp)
 {
+    if (spp == NULL || spp->words == NULL)
+        return;
     free(spp->words);
     free(spp);
 }
 
+int compare_commands(shell_command_data_ptr *A, int num_comms_A, shell_command_data_ptr *B, int num_comms_B)
+{
+    int ans = 1; // 0 for not equal, 1 for equal
+    int i = 0;
+    while (i < num_comms_A && i < num_comms_B)
+    {
+        int comp_structs = 1;
+        int j = 0;
+
+        while (j < A[i]->num_args && j < B[i]->num_args)
+        {
+            comp_structs &= (strcmp(A[i]->words[j], B[i]->words[j]) == 0);
+            if (comp_structs == 0)
+                return 0;
+            j++;
+        }
+        if ((j == A[i]->num_args && j != B[i]->num_args) || (j != A[i]->num_args && j == B[i]->num_args))
+            return 0;
+        else if (j == A[i]->num_args && j == B[i]->num_args)
+            comp_structs &= (A[i]->fg_or_bg == B[i]->fg_or_bg);
+
+        if (comp_structs == 0)
+            return 0;
+        else
+            ans &= comp_structs;
+
+        i++;
+    }
+    if ((i == num_comms_A && i != num_comms_B) || (i != num_comms_A && i == num_comms_B))
+        return 0;
+    else
+        return ans;
+}
 
 // first tokenise input string wrt ';', each token of which may or may not contain a background process (&).
 // however, the last command in each token will definitely be a foreground process (either ended with ; or was the last command)
@@ -52,7 +87,6 @@ shell_command_data_ptr *parse_input(char *input_string, int len, int *num_comman
 
         if (command_token_semicolon == NULL) // no more tokens
             break;
-
 
         // add this token to tokens list
         command_tokens_semicolon_list = (char **)realloc(command_tokens_semicolon_list, sizeof(char *) * (command_tokens_semicolon_list_index + 1));

@@ -42,38 +42,44 @@ char **readlines(const char *path, int *num_lines)
     FILE *fp = fopen(path, "r");
     if (fp == NULL)
     {
+        // create file if not already created
         int fd = open(path, O_CREAT, 0644);
         close(fd);
         return NULL;
     }
-    char buf[4096 * 20 + 1];
+    char line[4096];
     char **lines = NULL;
     *num_lines = 0;
 
-    fread(buf, sizeof(char), 4096 * 20, fp);
-    fclose(fp);
+    // fread(buf, sizeof(char), 4096 * 20, fp);
 
-    if (strcmp(buf, "") == 0) // empty file
+    while (fgets(line, sizeof(line) / sizeof(char) - 1, fp) != NULL)
     {
-        return lines;
-    }
-
-    // printf("buf: (%s)\n", buf);
-    char *line = NULL;
-    while ((*num_lines) == 0 || line != NULL)
-    {
-        if (*num_lines == 0)
-            line = strtok(buf, "\n\r");
-        else
-            line = strtok(NULL, "\n\r");
-
-        if (line == NULL)
-            break;
-
+        // printf("%s\n", line);
+        line[strlen(line) - 1] = '\0'; // omit the last \n
         lines = (char **)realloc(lines, sizeof(char *) * ((*num_lines) + 1));
         lines[(*num_lines)] = (char *)malloc(sizeof(char) * (strlen(line) + 1));
         strcpy(lines[(*num_lines)++], line);
     }
+
+    fclose(fp);
+
+    // // printf("buf: (%s)\n", buf);
+    // char *line = NULL;
+    // while ((*num_lines) == 0 || line != NULL)
+    // {
+    //     if (*num_lines == 0)
+    //         line = strtok(buf, "\n\r");
+    //     else
+    //         line = strtok(NULL, "\n\r");
+
+    //     if (line == NULL)
+    //         break;
+
+    //     lines = (char **)realloc(lines, sizeof(char *) * ((*num_lines) + 1));
+    //     lines[(*num_lines)] = (char *)malloc(sizeof(char) * (strlen(line) + 1));
+    //     strcpy(lines[(*num_lines)++], line);
+    // }
 
     // printf("readlines numlines = %d\n",*num_lines);
 

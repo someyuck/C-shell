@@ -1,15 +1,1 @@
- tree -l 2 /home ;
- seek ;
- seek ;
-e -l 2 /home ;
- seek assignments ../../.. ;
- seek assignments ../../.. ;
- warp /home ;
-signments ../../.. ;
- peek ;
-/home ;
- warp someyuck ;
-;
- peek ;
- someyuck ;
- 2-1/Operating Systems and Networks/assignments/mini-project-1-someyuck/a.out ;
+sleep 1 ;
