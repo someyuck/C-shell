@@ -1,1 +1,15 @@
-sleep 1 ;
+cat whello ;
+wc<hello>whello ;
+cat hello ;
+cat whello ;
+rm whello ;
+wc<hello>whello ;
+pwwk ;
+peek ;
+cat whello ;
+wc<hello>>whello ;
+cat whello ;
+wc< hello>whello ;
+cat whello ;
+wc< hello>> whello ;
+cat whello ;

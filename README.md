@@ -37,3 +37,6 @@ This file implements Specification 7 (proclore), deiplaying the info of the proc
 6. The output of system commands like ```ls``` will not be coloured (as in the linux terminal).
 7. For ```seek```, I have assumed the following flags to be valid : ```-f```, ```-d```, ```-e```, ```-fe```, ```-ef```, ```-de```, ```-ed```. Also multiple occurences of the same flag is allowed, for instance, ```seek -f -fe -f -f -e```. All other possibilities (and also of course ```-f ``` and ```-d``` together) give the ```Invalid flags!``` error.
 8. For ```seek``` again, I assume that the user will not miss entering the file to be searched.
+
+9. For i/o redirection, I have assumed that the user will enter files that are in the current working directory, and have not implemented relative paths.
+10. For i/o redirection : parse_input.c:204

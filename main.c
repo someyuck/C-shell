@@ -65,7 +65,10 @@ int main()
         if (commands != NULL)
         {
             for (int i = 0; i < num_commands; i++)
-                execute(commands[i]);
+            {
+                // establish redirections, if any, overwriting pipeline redirections
+                handle_redirection_and_execute(commands[i]);
+            }
         }
         store_commands();
     }

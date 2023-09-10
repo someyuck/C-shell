@@ -5,7 +5,10 @@ shell_command_data_ptr create_shell_command_struct(int num_args, int fg_or_bg)
     shell_command_data_ptr sp = (shell_command_data_ptr)malloc(sizeof(struct shell_command_data));
     sp->num_args = num_args;
     sp->fg_or_bg = fg_or_bg;
-    sp->words = NULL; // since this'll be realloc-ed in the parse function
+    sp->words = NULL;          // since this'll be realloc'd in the parse function
+    sp->in_redir_fname = NULL; // NULL if no redirection, if there then realloc'd in the parse function
+    sp->out_redir_fname = NULL;
+    sp->out_concat = -1; // 0 for o/p w/ replacement, 1 for o/p with concatenation, -1 if no o/p redirection
     return sp;
 }
 
@@ -14,6 +17,10 @@ void destroy_shell_command_struct(shell_command_data_ptr spp)
     if (spp == NULL || spp->words == NULL)
         return;
     free(spp->words);
+    if (spp->in_redir_fname != NULL)
+        free(spp->in_redir_fname);
+    if (spp->out_redir_fname != NULL)
+        free(spp->out_redir_fname);
     free(spp);
 }
 
@@ -159,10 +166,134 @@ shell_command_data_ptr *parse_input(char *input_string, int len, int *num_comman
 
     free(command_tokens_semicolon_list);
 
-    // now loop over the list, tokenise wrt whitespaces, converting each command string into a struct, and add it to the struct list, marking fg or bg as appropriate
+    // now loop over the list, check for redirection operators, if present, add to appropriate field in the struct, and trim the string for next steps.
+    // then tokenise wrt whitespaces, converting each command string into a struct, and add it to the struct list, marking fg or bg as appropriate
     for (int i = 0; i < command_strings_list_index; i++)
     {
         shell_command_data_ptr sp = create_shell_command_struct(0, is_command_fg_or_bg[i]);
+
+        // trim the command string
+        int comm_len;
+        command_strings_list[i] = trim(command_strings_list[i], strlen(command_strings_list[i]), &comm_len);
+        if (command_strings_list[i] == NULL)
+        {
+            // handle error
+        }
+
+        // check for redirection & trim the command string
+        int j = 0;
+        char *trimmed_comm = NULL;
+        int trimmed_comm_idx = 0;
+        while (j < comm_len)
+        {
+            if (command_strings_list[i][j] == '<') // input redirection operator
+            {
+                if (sp->in_redir_fname != NULL) // just for fun implemented multiple input operators
+                {
+                    free(sp->in_redir_fname);
+                    sp->in_redir_fname = NULL;
+                }
+
+                j++;
+                while (command_strings_list[i][j] == ' ' || command_strings_list[i][j] == '\t')
+                    j++;
+                if (command_strings_list[i][j] == '\0' || command_strings_list[i][j] == '>' || command_strings_list[i][j] == '<')
+                {
+                    // handle error
+                    fprintf(stderr, "\033[1;31mERROR: missing a file to redirect input from\033[0m\n");
+                    break; // assumtion !!!
+                }
+                int fname_idx = 0;
+                while (command_strings_list[i][j] != '\0' && command_strings_list[i][j] != '>' && command_strings_list[i][j] != '<' && command_strings_list[i][j] != ' ' && command_strings_list[i][j] != '\t')
+                {
+                    sp->in_redir_fname = (char *)realloc(sp->in_redir_fname, sizeof(char) * (fname_idx + 1));
+                    sp->in_redir_fname[fname_idx++] = command_strings_list[i][j++];
+                }
+                sp->in_redir_fname = (char *)realloc(sp->in_redir_fname, sizeof(char) * (fname_idx + 1));
+                sp->in_redir_fname[fname_idx] = '\0';
+
+                if (fname_idx > 0)
+                    j--; // to allow handling of other redirection operators
+            }
+            else if (command_strings_list[i][j] == '>' && command_strings_list[i][j + 1] != '>') // output w/o concatenation
+            {
+                if (sp->out_redir_fname != NULL) // just for fun implemented multiple output operators
+                {
+                    free(sp->out_redir_fname);
+                    sp->out_redir_fname = NULL;
+                }
+
+                j++;
+                while (command_strings_list[i][j] == ' ' || command_strings_list[i][j] == '\t')
+                    j++;
+                if (command_strings_list[i][j] == '\0' || command_strings_list[i][j] == '>' || command_strings_list[i][j] == '<')
+                {
+                    // handle error
+                    fprintf(stderr, "\033[1;31mERROR: missing a file to redirect output to\033[0m\n");
+                    break;
+                }
+
+                int fname_idx = 0;
+                while (command_strings_list[i][j] != '\0' && command_strings_list[i][j] != '>' && command_strings_list[i][j] != '<' && command_strings_list[i][j] != ' ' && command_strings_list[i][j] != '\t')
+                {
+                    sp->out_redir_fname = (char *)realloc(sp->out_redir_fname, sizeof(char) * (fname_idx + 1));
+                    sp->out_redir_fname[fname_idx++] = command_strings_list[i][j++];
+                }
+                sp->out_redir_fname = (char *)realloc(sp->out_redir_fname, sizeof(char) * (fname_idx + 1));
+                sp->out_redir_fname[fname_idx] = '\0';
+
+                sp->out_concat = 0; // no concat
+
+                if (fname_idx > 0)
+                    j--; // to allow handling of other redirection operators
+            }
+            else if (command_strings_list[i][j] == '>' && command_strings_list[i][j + 1] == '>') // output w/ concatenation
+            {
+                if (sp->out_redir_fname != NULL) // just for fun implemented multiple output operators
+                {
+                    free(sp->out_redir_fname);
+                    sp->out_redir_fname = NULL;
+                }
+
+                j += 2;
+                while (command_strings_list[i][j] == ' ' || command_strings_list[i][j] == '\t')
+                    j++;
+                if (command_strings_list[i][j] == '\0' || command_strings_list[i][j] == '>' || command_strings_list[i][j] == '<')
+                {
+                    // handle error
+                    fprintf(stderr, "\033[1;31mERROR: missing a file to redirect output to\033[0m\n");
+                    break;
+                }
+
+                int fname_idx = 0;
+                while (command_strings_list[i][j] != '\0' && command_strings_list[i][j] != '>' && command_strings_list[i][j] != '<' && command_strings_list[i][j] != ' ' && command_strings_list[i][j] != '\t')
+                {
+                    sp->out_redir_fname = (char *)realloc(sp->out_redir_fname, sizeof(char) * (fname_idx + 1));
+                    sp->out_redir_fname[fname_idx++] = command_strings_list[i][j++];
+                }
+                sp->out_redir_fname = (char *)realloc(sp->out_redir_fname, sizeof(char) * (fname_idx + 1));
+                sp->out_redir_fname[fname_idx] = '\0';
+
+                sp->out_concat = 1; // concat
+
+                if (fname_idx > 0)
+                    j--; // to allow handling of other redirection operators
+            }
+
+            else // add char to trimmed comm, only '\0' may not be added to trimmed string, so add it in the end
+            {
+                trimmed_comm = (char *)realloc(trimmed_comm, sizeof(char) * (trimmed_comm_idx + 1));
+                trimmed_comm[trimmed_comm_idx++] = command_strings_list[i][j];
+            }
+            j++;
+        }
+        trimmed_comm = (char *)realloc(trimmed_comm, sizeof(char) * (trimmed_comm_idx + 1));
+        trimmed_comm[trimmed_comm_idx++] = '\0';
+
+        free(command_strings_list[i]);
+        command_strings_list[i] = trimmed_comm;
+
+        // tokenise the trimmed string wrt spaces and add the words to the struct
         int counter_3 = 0;
         char *word;
         while (counter_3 == 0 || word != NULL)

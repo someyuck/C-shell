@@ -29,6 +29,7 @@
 #include "system_commands.h"
 #include "pastevents.h"
 #include "seek.h"
+#include "redirect.h"
 
 #include "utils.h"
 
