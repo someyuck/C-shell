@@ -10,8 +10,8 @@ pid_t bg_proc_pids[MAX_BG_PROCESSES_TRACKED];
 char *bg_proc_names[MAX_BG_PROCESSES_TRACKED];
 int bg_processes_count;
 char *latest_prompt_input;
-char **latest_commands_list;
-int num_latest_commands;
+char ***latest_pipelines_list;
+int num_latest_pipelines;
 
 int main()
 {
@@ -27,8 +27,8 @@ int main()
         bg_proc_names[i] = NULL;
     }
     latest_prompt_input = NULL;
-    latest_commands_list = NULL;
-    num_latest_commands = 0;
+    latest_pipelines_list = NULL;
+    num_latest_pipelines = 0;
 
     while (1)
     {
@@ -50,24 +50,29 @@ int main()
         }
 
         // free up space in global list of latest command strings
-        if (latest_commands_list != NULL)
+        if (latest_pipelines_list != NULL)
         {
-            for (int i = 0; i < num_latest_commands; i++)
-                free(latest_commands_list[i]);
-            free(latest_commands_list);
-            latest_commands_list = NULL;
-            num_latest_commands = 0;
+            for (int i = 0; i < num_latest_pipelines; i++)
+            {
+                int j=0;
+                while(latest_pipelines_list[i][j] != NULL)
+                    free(latest_pipelines_list[i][j++]);
+                free(latest_pipelines_list[i]);
+            }
+            free(latest_pipelines_list);
+            latest_pipelines_list = NULL;
+            num_latest_pipelines = 0;
         }
 
-        int num_commands;
-        shell_command_data_ptr *commands = parse_input(input, strlen(input), &num_commands, 1);
+        int num_pipelines;
+        pipeline *pipelines = parse_input(input, strlen(input), &num_pipelines, 1);
 
-        if (commands != NULL)
+        if (pipelines != NULL)
         {
-            for (int i = 0; i < num_commands; i++)
+            for (int i = 0; i < num_pipelines; i++)
             {
                 // establish redirections, if any, overwriting pipeline redirections
-                handle_redirection_and_execute(commands[i]);
+                handlePipeline(pipelines[i]);
             }
         }
         store_commands();

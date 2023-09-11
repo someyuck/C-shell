@@ -22,6 +22,7 @@
 #include <sys/dir.h>
 
 #include "prompt.h"
+#include "input_defs.h"
 #include "parse_input.h"
 #include "warp.h"
 #include "peek.h"
@@ -30,6 +31,7 @@
 #include "pastevents.h"
 #include "seek.h"
 #include "redirect.h"
+#include "pipeline.h"
 
 #include "utils.h"
 
@@ -48,7 +50,7 @@ extern char* bg_proc_names[MAX_BG_PROCESSES_TRACKED];
 extern int bg_processes_count;
 
 extern char *latest_prompt_input; // initialised in main
-extern char **latest_commands_list; // initialised in parse_input()
-extern int num_latest_commands; // initialised in parse_input()
+extern char ***latest_pipelines_list; // initialised in parse_input()
+extern int num_latest_pipelines; // initialised in parse_input()
 
 #endif
