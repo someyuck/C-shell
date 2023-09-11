@@ -75,14 +75,7 @@ void handlePipeline(pipeline P)
 {
     // establish pipeline redirections (stdout(i) -> stdin(i+1)), then handle redirections
     int ret;
-    int pipe_ends[2];
-    ret = pipe(pipe_ends);
-    if (ret == -1)
-    {
-        fprintf(stderr, "\033[1;31mERROR: pipe : errno (%d) : %s\033[0m\n", errno, strerror(errno));
-        // return 0; // don't execute comm in main()
-        return;
-    }
+    int pipes[P->num_commands][2]; // some weird read overflow error if (P->num_commands - 1) used instead
 
     int stdin_copy = dup(0);
     if (stdin_copy == -1)
@@ -101,10 +94,19 @@ void handlePipeline(pipeline P)
 
     for (int i = 0; i < P->num_commands; i++)
     {
+        // create a pipe in ith array
+        ret = pipe(pipes[i]);
+        if (ret == -1)
+        {
+            fprintf(stderr, "\033[1;31mERROR: pipe : errno (%d) : %s\033[0m\n", errno, strerror(errno));
+            // return 0; // don't execute comm in main()
+            break;
+        }
+
         // dup read end to stdin
         if (i != 0)
         {
-            int ret_in = dup2(pipe_ends[0], 0);
+            int ret_in = dup2(pipes[i - 1][0], 0);
             if (ret_in == -1)
             {
                 fprintf(stderr, "\033[1;31mERROR: dup2 : errno (%d) : %s\033[0m\n", errno, strerror(errno));
@@ -112,11 +114,10 @@ void handlePipeline(pipeline P)
                 break;
             }
         }
-
         // and write end to stdout
         if (i != P->num_commands - 1)
         {
-            int ret_out = dup2(pipe_ends[1], 1);
+            int ret_out = dup2(pipes[i][1], 1);
             if (ret_out == -1)
             {
                 fprintf(stderr, "\033[1;31mERROR: dup2 : errno (%d) : %s\033[0m\n", errno, strerror(errno));
@@ -124,20 +125,21 @@ void handlePipeline(pipeline P)
                 break;
             }
         }
-        else if (i != 0 && i == P->num_commands - 1)
+
+        handle_redirection_and_execute(P->comm_list[i]);
+
+        // restore std streams and close pipe
+        if (i != 0)
         {
-            close(pipe_ends[1]);
-            while (dup2helper(stdout_copy, 1) == 0)
+            close(pipes[i - 1][0]);
+            while (dup2helper(stdin_copy, 0) == 0)
             {
                 printf("#");
             }
         }
-
-        handle_redirection_and_execute(P->comm_list[i]);
-
         if (i != P->num_commands - 1)
         {
-            // close(pipe_ends[1]);
+            close(pipes[i][1]);
             while (dup2helper(stdout_copy, 1) == 0)
             {
                 printf("#");
@@ -145,17 +147,17 @@ void handlePipeline(pipeline P)
         }
     }
 
-    close(pipe_ends[0]);
+    close(pipes[P->num_commands - 1][1]); // unused write end of last pipe
+
     while (dup2helper(stdin_copy, 0) == 0)
     {
         printf("#");
     }
-    // close(pipe_ends[1]);
-    // while (dup2helper(stdout_copy, 1) == 0)
-    // {
-    //     printf("#");
-    // }
-    printf("im here\n");
     close(stdin_copy);
+    while (dup2helper(stdout_copy, 1) == 0)
+    {
+        printf("#");
+    }
+    printf("im here\n");
     close(stdout_copy);
 }
