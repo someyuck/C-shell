@@ -32,6 +32,7 @@
 #include "seek.h"
 #include "redirect.h"
 #include "pipeline.h"
+#include "activities.h"
 
 #include "utils.h"
 

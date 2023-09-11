@@ -63,7 +63,6 @@ void system_command(shell_command_data_ptr command_data_ptr)
             }
             else
             {
-
                 if (child_time > 2)
                 {
                     long_fg_process = (char *)malloc(sizeof(char) * (strlen(args[0]) + 3 + 1)); // "<proc> : ", duration directly printed in prompt.c

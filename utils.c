@@ -108,28 +108,18 @@ void execute(shell_command_data_ptr comm)
     if (comm != NULL)
     {
         if (strcmp(comm->words[0], "warp") == 0)
-        {
             warp(comm->words, comm->num_args);
-        }
         else if (strcmp(comm->words[0], "peek") == 0)
-        {
             peek(comm->words, comm->num_args);
-        }
         else if (strcmp(comm->words[0], "proclore") == 0)
-        {
             proclore(comm->words, comm->num_args);
-        }
         else if (strcmp(comm->words[0], "pastevents") == 0)
-        {
             pastevents(comm->words, comm->num_args);
-        }
         else if (strcmp(comm->words[0], "seek") == 0)
-        {
             seek(comm->words, comm->num_args);
-        }
+        else if(strcmp(comm->words[0], "activities") == 0)
+            activities(comm->words, comm->num_args);
         else
-        {
             system_command(comm);
-        }
     }
 }

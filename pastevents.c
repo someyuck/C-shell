@@ -214,7 +214,6 @@ void store_commands()
     char *temp_write_string = (char *)malloc(sizeof(char) * (strlen(write_string) + 1));
     strcpy(temp_write_string, write_string);
     int num_write_string_pipelines;
-    printf("write string: [%s]\n", write_string);
     pipeline *write_string_pipelines = parse_input(temp_write_string, strlen(temp_write_string), &num_write_string_pipelines, 0);
 
     pipeline *last_pipelines = NULL;
@@ -249,10 +248,8 @@ void store_commands()
         free(last_pipelines);
     }
     for (int x = 0; x < num_pipelines; x++)
-    {
         destroy_pipeline(pipelines[x]);
-        free(pipelines);
-    }
+    free(pipelines);
     if (write_list != NULL)
     {
         for (int j = 0; j < num_lines; j++)

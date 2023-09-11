@@ -158,6 +158,5 @@ void handlePipeline(pipeline P)
     {
         printf("#");
     }
-    printf("im here\n");
     close(stdout_copy);
 }
