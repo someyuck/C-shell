@@ -34,6 +34,7 @@
 #include "pipeline.h"
 #include "activities.h"
 #include "ping.h"
+#include "fgbg.h"
 
 #include "utils.h"
 

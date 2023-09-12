@@ -121,6 +121,10 @@ void execute(shell_command_data_ptr comm)
             activities(comm->words, comm->num_args);
         else if (strcmp(comm->words[0], "ping") == 0)
             ping(comm->words, comm->num_args);
+        else if (strcmp(comm->words[0], "bg") == 0)
+            bg(comm->words, comm->num_args);
+        else if (strcmp(comm->words[0], "fg") == 0)
+            fg(comm->words, comm->num_args);
         else
             system_command(comm);
     }

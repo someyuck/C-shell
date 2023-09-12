@@ -1,15 +1,15 @@
-sleep 50  &  sleep 40  &
+proclore 16485 ;
 activities ;
-ls ;
-peek ;
+proclore 16485 ;
+activities ;
 gedit ;
 activities ;
-ping 6231 18 ;
-ping 6231 9 ;
-ping -1 9 ;
-objo ;
-echo hello  | catt ;
- ;
-peek  | cat | wc ;
-ls | cat | wc ;
-peek ;
+proclore 17707 ;
+fg 17707 4 ;
+fg ;
+fg 17707 ;
+activities ;
+proclore 17707 ;
+activities ;
+proclore 17707 ;
+cmatrix ;
