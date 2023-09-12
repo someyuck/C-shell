@@ -1,15 +1,15 @@
-sleep 1  &
+sleep 50  &  sleep 40  &
 activities ;
-sleep 5  &  sleep 10  &  sleep 10  &
+ls ;
+peek ;
+gedit ;
 activities ;
-sleep 1  &
-activities ;
-sleep 100  &
-sleep 40  &
-sleep 60  &
-activities ;
-sleep 15  &
-activities ;
-activities 4 ;
-activities ;
-git status ;
+ping 6231 18 ;
+ping 6231 9 ;
+ping -1 9 ;
+objo ;
+echo hello  | catt ;
+ ;
+peek  | cat | wc ;
+ls | cat | wc ;
+peek ;

@@ -188,10 +188,10 @@ pipeline *parse_input(char *input_string, int len, int *num_pipelines, int updat
             pipeline_comm_str_list[i][pipeline_list[i]->num_commands] = trim(pipeline_comm_str_list[i][pipeline_list[i]->num_commands], strlen(pipeline_comm_str_list[i][pipeline_list[i]->num_commands]), &comm_len);
             if (pipeline_comm_str_list[i][pipeline_list[i]->num_commands] == NULL)
             {
-                // handle error
+                break;
             }
             // if (pipeline_comm_str_list[i][pipeline_list[i]->num_commands] == NULL)
-                // printf("yessss\n");
+            //     printf("yessss\n");
 
             // check for redirection & trim the command string
             int j = 0;

@@ -117,8 +117,10 @@ void execute(shell_command_data_ptr comm)
             pastevents(comm->words, comm->num_args);
         else if (strcmp(comm->words[0], "seek") == 0)
             seek(comm->words, comm->num_args);
-        else if(strcmp(comm->words[0], "activities") == 0)
+        else if (strcmp(comm->words[0], "activities") == 0)
             activities(comm->words, comm->num_args);
+        else if (strcmp(comm->words[0], "ping") == 0)
+            ping(comm->words, comm->num_args);
         else
             system_command(comm);
     }

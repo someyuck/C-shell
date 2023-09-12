@@ -300,6 +300,10 @@ void peek(char **args, int num_args)
             if (flag_status[1] == 0)
                 printf("\n");
         }
+
+        for(int i = 0 ; i<entry_strings_list_index;i++)
+            free(entry_strings_list[i]);
+        free(entry_strings_list);
     }
     closedir(dir_ptr);
     free(dir_path);

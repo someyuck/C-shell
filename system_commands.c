@@ -50,11 +50,20 @@ void system_command(shell_command_data_ptr command_data_ptr)
     {
         if (command_data_ptr->fg_or_bg == 0) // foreground process
         {
+            // store pid for handling signals
+            cur_fg_child_pid = child_pid;
+            cur_fg_child_pname = (char*)malloc(sizeof(char*)*(strlen(command_data_ptr->words[0]) + 1));
+            strcpy(cur_fg_child_pname, command_data_ptr->words[0]);
+
             int status;
             time_t start_time = time(NULL);
 
             int wait_ret = waitpid(child_pid, &status, WUNTRACED);
             time_t child_time = time(NULL);
+
+            // process exited so remove form global var
+            cur_fg_child_pid = -1;
+            
             child_time -= start_time;
 
             if (wait_ret == -1)

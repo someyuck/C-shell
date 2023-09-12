@@ -12,10 +12,15 @@ int bg_processes_count;
 char *latest_prompt_input;
 char ***latest_pipelines_list;
 int num_latest_pipelines;
+pid_t cur_fg_child_pid;
+char *cur_fg_child_pname;
 
 int main()
 {
     // Keep accepting commands
+
+    // set signal handlers
+    assign_signal_handlers();
 
     home_directory = getcwd(NULL, 0);
     old_pwd[0] = '\0';
@@ -30,6 +35,9 @@ int main()
     latest_pipelines_list = NULL;
     num_latest_pipelines = 0;
 
+    cur_fg_child_pid = -1;
+    cur_fg_child_pname = NULL;
+
     while (1)
     {
         // Print appropriate prompt with username, systemname and directory before accepting input
@@ -37,6 +45,27 @@ int main()
         prompt();
         char input[4096];
         fgets(input, 4096, stdin);
+
+        if (feof(stdin) != 0)
+        {
+            handle_CTRL_D();
+            free(home_directory);
+            if (latest_prompt_input != NULL)
+                free(latest_prompt_input);
+            if (cur_fg_child_pname != NULL)
+                free(cur_fg_child_pname);
+            if (long_fg_process != NULL)
+                free(long_fg_process);
+
+            for (int i = 0; i < num_latest_pipelines; i++)
+            {
+                int j = 0;
+                while (latest_pipelines_list[i][j] != NULL)
+                    free(latest_pipelines_list[i][j++]);
+                free(latest_pipelines_list[i]);
+            }
+            return 0;
+        }
 
         latest_prompt_input = (char *)malloc(sizeof(char) * (strlen(input) + 1));
         strcpy(latest_prompt_input, input);
@@ -54,8 +83,8 @@ int main()
         {
             for (int i = 0; i < num_latest_pipelines; i++)
             {
-                int j=0;
-                while(latest_pipelines_list[i][j] != NULL)
+                int j = 0;
+                while (latest_pipelines_list[i][j] != NULL)
                     free(latest_pipelines_list[i][j++]);
                 free(latest_pipelines_list[i]);
             }

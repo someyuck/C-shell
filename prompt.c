@@ -88,4 +88,5 @@ void prompt()
         long_fg_process_strlen = 0;
     }
     free(relative_path_of_pwd);
+    free(hostname);
 }

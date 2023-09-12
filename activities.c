@@ -59,6 +59,8 @@ void activities(char **args, int num_args)
 
             if (state[0] == 'R' || state[0] == 'S')
                 printf("%d: %s - Running\n", pid, pname + 1);
+            if (state[0] == 'T')
+                printf("%d: %s - Stopped\n", pid, pname + 1);
             // else
             //     printf("%d %d: %s %s- Stopped\n", bg_proc_pids[i], pid, bg_proc_names[i] ,pname);
 

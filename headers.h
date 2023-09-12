@@ -33,6 +33,7 @@
 #include "redirect.h"
 #include "pipeline.h"
 #include "activities.h"
+#include "ping.h"
 
 #include "utils.h"
 
@@ -53,5 +54,8 @@ extern int bg_processes_count;
 extern char *latest_prompt_input; // initialised in main
 extern char ***latest_pipelines_list; // initialised in parse_input()
 extern int num_latest_pipelines; // initialised in parse_input()
+
+extern pid_t cur_fg_child_pid;
+extern char *cur_fg_child_pname;
 
 #endif

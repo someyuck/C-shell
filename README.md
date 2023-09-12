@@ -42,5 +42,6 @@ This file implements Specification 7 (proclore), deiplaying the info of the proc
 10. For i/o redirection : parse_input.c:204
 11. For cases involving both pipelines and i/o redirection, I have given higher priority to redirection, i.e. any redirections made via pipes will not be considered for i/o flow and redirection operators (if present) will be used.
 12. ```sed``` won't work with piping as I have not implemented the expansion of single quotes as in bash.
-13. For `activities`, I am only displaying those (only background system) processes spawned by the shell that are _currently_ in the "running" (R) or "sleeping" (S) states. All other states and exited processed are treated as "stopped" and will not be displayed.
+13. For `activities`, I am only displaying those (only background system) processes spawned by the shell that are _currently_ in the "running" (R) or "sleeping" (S)  or "stopped" (T) states. All other states and exited processed are treated as "stopped" and will not be displayed.
 14. Also for ```activities```, since the doubt document mentions lexicographical ordering is by ```pid```, note that a process with pid ```10``` will appear before one with pid ```2```.
+15. For ```ping```, entering negative pids will throw an error, as first of all they are invalid and calling `kill()` on negatives is undesirable, as e.g. on pid = -1, `kill()` with `SIGKILL` essentially logs us out of the system. Entering 0 sends a signal to the processes in the shell's process group, so that is allowed
