@@ -20,6 +20,8 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <sys/dir.h>
+#include <ctype.h>
+#include <termios.h>
 
 #include "prompt.h"
 #include "input_defs.h"
@@ -35,6 +37,7 @@
 #include "activities.h"
 #include "ping.h"
 #include "fgbg.h"
+#include "neonate.h"
 
 #include "utils.h"
 
