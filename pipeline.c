@@ -134,7 +134,6 @@ void handlePipeline(pipeline P)
             close(pipes[i - 1][0]);
             while (dup2helper(stdin_copy, 0) == 0)
             {
-                printf("#");
             }
         }
         if (i != P->num_commands - 1)
@@ -142,21 +141,19 @@ void handlePipeline(pipeline P)
             close(pipes[i][1]);
             while (dup2helper(stdout_copy, 1) == 0)
             {
-                printf("#");
             }
         }
     }
 
-    close(pipes[P->num_commands - 1][1]); // unused write end of last pipe
+    if (P->num_commands > 1)
+        close(pipes[P->num_commands - 2][1]); // unused write end of second last pipe -- last pipe wasn't even called for pipe()
 
     while (dup2helper(stdin_copy, 0) == 0)
     {
-        printf("#");
     }
     close(stdin_copy);
     while (dup2helper(stdout_copy, 1) == 0)
     {
-        printf("#");
     }
     close(stdout_copy);
 }

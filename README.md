@@ -30,7 +30,7 @@ This file implements Specification 7 (proclore), deiplaying the info of the proc
 
 # Assumptions
 1. ```proclore``` will be run only when the shell is called with sudo.
-2. In ```pastevents```, I have added a ';' to the end of the last command entered in the input string in ```history.txt```, even if it wasn't originally entered as such.
+2. In ```pastevents```, I have added a ';' to the end of the last command (only if it wasn't entered as a background process) entered in the input string in ```history.txt```, even if it wasn't originally entered as such.
 3. In ```pastevents```, I don't store ```pastevents execute <n>``` if n is greater than the current number of commands in ```history.txt```, even though this command will fail.
 3. Also in ```pastevents```, to compare the latest entered command with the last stored command, I do not use direct string comparison; the comparison I use ignores the difference in whitespaces inside either command string. So, ```sleep     5; ls &``` and ```sleep 5;ls&``` are the same commands.
 5. The output of background processes will be printed on the terminal, and it may overlap with the prompts. In such cases, press ENTER to get a fresh prompt with clear view (although it would still work with the overlapped prompt).

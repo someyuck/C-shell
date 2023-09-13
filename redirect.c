@@ -109,7 +109,6 @@ void handle_redirection_and_execute(shell_command_data_ptr comm)
         close(fin);
         while (dup2helper(stdin_copy, 0) == 0)
         {
-            printf("#");
         }
         close(stdin_copy);
     }
@@ -118,7 +117,6 @@ void handle_redirection_and_execute(shell_command_data_ptr comm)
         close(fout);
         while (dup2helper(stdout_copy, 1) == 0)
         {
-            printf("$");
         }
         close(stdout_copy);
     }

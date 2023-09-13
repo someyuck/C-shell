@@ -4,16 +4,16 @@ void ping(char **args, int num_args)
 {
     if (num_args == 3)
     {
-
-        int target_pid = strtol(args[1], NULL, 0);
-        if (errno == EINVAL || target_pid < 0)
+        char *end;
+        int target_pid = strtol(args[1], &end, 0);
+        if (errno == EINVAL || target_pid < 0 || *end != '\0')
         {
             fprintf(stderr, "\033[1;31mERROR: ping: invalid process ID\033[0m\n");
             return;
         }
 
-        int target_signal = strtol(args[2], NULL, 0);
-        if (errno == EINVAL)
+        int target_signal = strtol(args[2], &end, 0);
+        if (errno == EINVAL || *end != '\0')
         {
             fprintf(stderr, "\033[1;31mERROR: ping: invalid signal number\033[0m\n");
             return;

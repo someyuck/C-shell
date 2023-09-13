@@ -44,11 +44,14 @@ void pastevents(char **args, int num_args)
     {
         int num_lines;
         char **lines = readlines(history_path, &num_lines);
-        int target_index = strtol(args[2], NULL, 10);
-        if (target_index <= 0)
+        char *end;
+        int target_index = strtol(args[2], &end, 10);
+        if (errno == EINVAL || target_index <= 0 || *end != '\0')
         {
             free(history_path);
             fprintf(stderr, "\033[1;31mpastevents : ERROR: invalid target index\033[0m\n");
+            for (int i = 0; i < num_lines; i++)
+                free(lines[i]);
             return;
         }
 
@@ -56,16 +59,16 @@ void pastevents(char **args, int num_args)
         {
             free(history_path);
             fprintf(stderr, "\033[1;31mpastevents : ERROR: 0 commands in history\033[0m\n");
+            for (int i = 0; i < num_lines; i++)
+                free(lines[i]);
             return;
         }
 
         if (target_index > num_lines)
         {
             fprintf(stderr, "\033[1;31mpastevents : ERROR: %d commands in history\033[0m\n", num_lines);
-
             for (int i = 0; i < num_lines; i++)
                 free(lines[i]);
-
             free(lines);
             free(history_path);
             return;
@@ -116,9 +119,14 @@ void store_commands()
 
     for (int i = 0; i < num_pipelines; i++)
     {
+        shell_command_data_ptr *commands = pipelines[i]->comm_list;
         for (int j = 0; j < pipelines[i]->num_commands; j++)
         {
-            shell_command_data_ptr *commands = pipelines[i]->comm_list;
+            int l;
+            char *temp;
+            temp = trim(latest_pipelines_list[i][j], strlen(latest_pipelines_list[i][j]), &l);
+            free(latest_pipelines_list[i][j]);
+            latest_pipelines_list[i][j] = temp;
             if (strcmp(commands[j]->words[0], "pastevents") == 0)
             {
                 if (commands[j]->num_args == 1 || (commands[j]->num_args == 2 && strcmp(commands[j]->words[1], "purge") == 0))
@@ -130,8 +138,8 @@ void store_commands()
 
                     if (write_list != NULL)
                     {
-                        for (int j = 0; j < num_lines; j++)
-                            free(write_list[j]);
+                        for (int x = 0; x < num_lines; x++)
+                            free(write_list[x]);
                         free(write_list);
                     }
                     free(write_string);
@@ -139,10 +147,10 @@ void store_commands()
                     free(history_path);
                     return;
                 }
-                else if (commands[i]->num_args == 3 && strcmp(commands[i]->words[1], "execute") == 0)
+                else if (commands[j]->num_args == 3 && strcmp(commands[j]->words[1], "execute") == 0)
                 {
-                    int prev_process_idx = strtol(commands[i]->words[2], NULL, 10);
-                    if (prev_process_idx > num_lines)
+                    int prev_process_idx = strtol(commands[j]->words[2], NULL, 10); // a failed pastevents execute (cuz of the index) wouldn't have been stored so no need to check
+                    if (prev_process_idx > num_lines || prev_process_idx <= 0)
                     {
                         // command will fail so don't write the input string --> assumption
                         for (int x = 0; x < num_pipelines; x++)
@@ -151,8 +159,8 @@ void store_commands()
 
                         if (write_list != NULL)
                         {
-                            for (int j = 0; j < num_lines; j++)
-                                free(write_list[j]);
+                            for (int x = 0; x < num_lines; x++)
+                                free(write_list[x]);
                             free(write_list);
                         }
                         free(write_string);
@@ -160,34 +168,47 @@ void store_commands()
                         free(history_path);
                         return;
                     }
-                    else if (num_latest_pipelines >= 1)
+                    else
                     {
-                        char *prev_cmd = write_list[num_lines - prev_process_idx];
+                        int len;
+                        char *prev_cmd = trim(write_list[num_lines - prev_process_idx], strlen(write_list[num_lines - prev_process_idx]), &len);
+                        if (prev_cmd[len - 1] == ';') // as we will be adding a ';', if the current last command in the input string
+                            prev_cmd[len - 1] = '\0';
+                        printf("prev: [%s]\n", prev_cmd);
                         write_string = (char *)realloc(write_string, sizeof(char) * (strlen(write_string) + 1 + strlen(prev_cmd) + 2));
                         strcat(write_string, " ");
                         strcat(write_string, prev_cmd);
+                        printf("ws: [%s]\n", write_string);
                     }
                 }
             }
             else
             {
-                write_string = (char *)realloc(write_string, sizeof(char) * (strlen(write_string) + 1 + strlen(latest_pipelines_list[i][j]) + 3));
-
+                write_string = (char *)realloc(write_string, sizeof(char) * (strlen(write_string) + 1 + strlen(latest_pipelines_list[i][j]) + 1));
                 strcat(write_string, " ");
                 strcat(write_string, latest_pipelines_list[i][j]);
+            }
 
-                // add   '|' if current command is not the last one
-                if (j != pipelines[i]->num_commands - 1)
-                    strcat(write_string, " |");
+            // add   '|' if current command is not the last one
+            if (j != pipelines[i]->num_commands - 1)
+            {
+                write_string = (char *)realloc(write_string, sizeof(char) * (strlen(write_string) + 2 + 1));
+                strcat(write_string, " |");
             }
         }
 
         // since the whole pipeline will be either fg or bg (know that bg won't be given, still just storing, not handled in execution)
+        int l;
+        char *temp;
+        temp = trim(write_string, strlen(write_string), &l);
+        free(write_string);
+        write_string = temp;
+
         write_string = (char *)realloc(write_string, sizeof(char) * (strlen(write_string) + 3));
         if (pipelines[i]->fg_or_bg == 0)
             strcat(write_string, " ;"); // add assumption for if the very last command is fg
         else
-            strcat(write_string, " &");
+            strcat(write_string, " &"); // not gonna be tested but still
     }
 
     if (num_lines >= 15) // have to handle > as life is dogshit

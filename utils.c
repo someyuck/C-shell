@@ -58,8 +58,8 @@ char **readlines(const char *path, int *num_lines)
         // printf("%s\n", line);
         line[strlen(line) - 1] = '\0'; // omit the last \n
         lines = (char **)realloc(lines, sizeof(char *) * ((*num_lines) + 1));
-        lines[(*num_lines)] = (char *)malloc(sizeof(char) * (strlen(line) + 1));
-        strcpy(lines[(*num_lines)++], line);
+        int len;
+        lines[(*num_lines)++] = trim(line, strlen(line), &len);
     }
 
     fclose(fp);

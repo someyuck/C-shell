@@ -4,8 +4,9 @@ void fg(char **args, int num_args)
 {
     if (num_args == 2)
     {
-        pid_t target_pid = strtol(args[1], NULL, 10);
-        if (errno == EINVAL || target_pid < 0)
+        char *end;
+        pid_t target_pid = strtol(args[1], &end, 10);
+        if (errno == EINVAL || target_pid < 0 || *end != '\0')
         {
             fprintf(stderr, "\033[1;31mERROR: bg: invalid process ID\033[0m\n");
             return;
@@ -113,8 +114,9 @@ void bg(char **args, int num_args)
 {
     if (num_args == 2)
     {
-        pid_t target_pid = strtol(args[1], NULL, 10);
-        if (errno == EINVAL || target_pid < 0)
+        char *end;
+        pid_t target_pid = strtol(args[1], &end, 10);
+        if (errno == EINVAL || target_pid < 0 || *end != '\0')
         {
             fprintf(stderr, "\033[1;31mERROR: bg: invalid process ID\033[0m\n");
             return;
