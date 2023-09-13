@@ -20,6 +20,10 @@ void system_command(shell_command_data_ptr command_data_ptr)
 
     else if (child_pid == 0)
     {
+        if (command_data_ptr->fg_or_bg == 1)
+        {
+        setpgid(0, 0);
+        }
         ret = execvp(args[0], args);
         if (ret == -1)
         {
@@ -29,30 +33,27 @@ void system_command(shell_command_data_ptr command_data_ptr)
                 fprintf(stderr, "\033[1;31mexecvp: errno(%d) : %s\033[0m\n", errno, strerror(errno));
 
             // free up space
-            for (int i = 0; i < command_data_ptr->num_args; i++)
-            {
-                free(args[i]);
-            }
-
-            free(args);
+            // for (int i = 0; i < command_data_ptr->num_args; i++)
+            //     free(args[i]);
+            // free(args);
             exit(0);
         }
         else
-        {
-            if (command_data_ptr->fg_or_bg == 1)
-            {
-                setpgid(0, 0); // make gid different from parent, i.e. child is now a bg process
-            }
             exit(0);
-        }
     }
     else if (child_pid > 0)
     {
         if (command_data_ptr->fg_or_bg == 0) // foreground process
         {
+            // setpgid(child_pid, getpgid(shell_pid)); // restore pgid of fg processes
             // store pid for handling signals
             cur_fg_child_pid = child_pid;
-            cur_fg_child_pname = (char*)malloc(sizeof(char*)*(strlen(command_data_ptr->words[0]) + 1));
+            if (cur_fg_child_pname != NULL)
+            {
+                free(cur_fg_child_pname);
+                cur_fg_child_pname = NULL;
+            }
+            cur_fg_child_pname = (char *)malloc(sizeof(char *) * (strlen(command_data_ptr->words[0]) + 1));
             strcpy(cur_fg_child_pname, command_data_ptr->words[0]);
 
             int status;
@@ -63,17 +64,19 @@ void system_command(shell_command_data_ptr command_data_ptr)
 
             // process exited so remove form global var
             cur_fg_child_pid = -1;
-            
+            free(cur_fg_child_pname);
+            cur_fg_child_pname = NULL;
+
             child_time -= start_time;
 
             if (wait_ret == -1)
-            {
                 fprintf(stderr, "\033[1;31mERROR: waitpid : errorno(%d) : %s\033[0m\n", errno, strerror(errno));
-            }
             else
             {
                 if (child_time > 2)
                 {
+                    if (long_fg_process != NULL)
+                        free(long_fg_process);
                     long_fg_process = (char *)malloc(sizeof(char) * (strlen(args[0]) + 3 + 1)); // "<proc> : ", duration directly printed in prompt.c
                     strcpy(long_fg_process, args[0]);
                     strcat(long_fg_process, " : ");
@@ -137,6 +140,7 @@ void handle_bg_process_exits()
 
                 bg_proc_pids[i] = -1;
                 free(bg_proc_names[i]);
+                bg_proc_names[i] = NULL;
                 bg_processes_count--;
                 break;
             }

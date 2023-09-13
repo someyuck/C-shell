@@ -20,7 +20,9 @@ int main()
     // Keep accepting commands
 
     // set signal handlers
-    assign_signal_handlers();
+    struct sigaction sigactionC;
+    struct sigaction sigactionZ;
+    assign_signal_handlers(sigactionC, sigactionZ);
 
     home_directory = getcwd(NULL, 0);
     old_pwd[0] = '\0';

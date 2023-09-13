@@ -36,6 +36,32 @@ void fg(char **args, int num_args)
         fscanf(fp, "%d %s %s %s %ld %s %s %ld", &pid, pname, state, dummy, &process_group, dummy, dummy, &tpgid);
         fclose(fp);
 
+        // remove the process from the bg process tracking
+        if (bg_processes_count < MAX_BG_PROCESSES_TRACKED)
+        {
+            for (int i = 0; i < MAX_BG_PROCESSES_TRACKED; i++)
+            {
+                if (bg_proc_pids[i] == target_pid)
+                {
+                    bg_proc_pids[i] = -1;
+                    free(bg_proc_names[i]);
+                    bg_proc_names[i] = NULL;
+                    bg_processes_count--;
+                    break;
+                }
+            }
+        }
+
+        // update global fg process tracker
+        cur_fg_child_pid = pid;
+        if (cur_fg_child_pname != NULL)
+        {
+            free(cur_fg_child_pname);
+            cur_fg_child_pname = NULL;
+        }
+        cur_fg_child_pname = (char *)malloc(sizeof(char) * (strlen(pname) + 1));
+        strcpy(cur_fg_child_pname, pname);
+
         // if process is stopped make it run again
         if (state[0] == 'T')
         {
@@ -46,17 +72,37 @@ void fg(char **args, int num_args)
         }
 
         // now send it back to fg by setting its group id equal to current processes group id
-
         setpgid(pid, tpgid);
 
-        // update global fg process tracker
-        cur_fg_child_pid = pid;
-        if (cur_fg_child_pname != NULL)
+        // do the time handling for prompt and wait (give control of terminal)
+        int status;
+        time_t start_time = time(NULL);
+        int wait_ret = waitpid(target_pid, &status, WUNTRACED);
+        time_t child_time = time(NULL);
+
+        // process exited so remove form global var
+        cur_fg_child_pid = -1;
+        free(cur_fg_child_pname);
+        cur_fg_child_pname = NULL;
+
+        child_time -= start_time;
+
+        if (wait_ret == -1)
+            fprintf(stderr, "\033[1;31mERROR: waitpid : errorno(%d) : %s\033[0m\n", errno, strerror(errno));
+        else
         {
-            free(cur_fg_child_pname);
-            cur_fg_child_pname = (char *)malloc(sizeof(char) * (strlen(pname) + 1));
-            strcpy(cur_fg_child_pname, pname);
+            if (child_time > 2)
+            {
+                if (long_fg_process != NULL)
+                    free(long_fg_process);
+                long_fg_process = (char *)malloc(sizeof(char) * (strlen(args[0]) + 3 + 1)); // "<proc> : ", duration directly printed in prompt.c
+                strcpy(long_fg_process, args[0]);
+                strcat(long_fg_process, " : ");
+                long_fg_process_strlen = strlen(long_fg_process);
+                long_fg_process_duration = child_time;
+            }
         }
+
         free(file_path);
     }
     else

@@ -1,15 +1,15 @@
-proclore 16485 ;
+clear ;
+sleep 100 ;
 activities ;
-proclore 16485 ;
+proclore 9262 ;
+fg 9262 ;
 activities ;
-gedit ;
+sleep 100  &
 activities ;
-proclore 17707 ;
-fg 17707 4 ;
-fg ;
-fg 17707 ;
+proclore 9266 ;
+ping 9266 19 ;
 activities ;
-proclore 17707 ;
+proclore 9266 ;
+fg 9266 ;
 activities ;
-proclore 17707 ;
-cmatrix ;
+proclore 9266 ;

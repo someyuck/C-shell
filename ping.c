@@ -31,12 +31,8 @@ void ping(char **args, int num_args)
         fprintf(stderr, "\033[1;31mERROR: ping: incorrect syntax\033[0m\n");
 }
 
-void assign_signal_handlers()
+void assign_signal_handlers(struct sigaction sigactionC, struct sigaction sigactionZ)
 {
-    struct sigaction sigactionC;
-    struct sigaction sigactionD;
-    struct sigaction sigactionZ;
-
     sigactionC.sa_handler = handle_CTRL_C;
     sigactionZ.sa_handler = handle_CTRL_Z;
 
@@ -55,16 +51,16 @@ void handle_CTRL_C(int signal)
             printf("\nNo foreground process is running at the moment. You can still enter commands (or just press enter)\n");
         else
         {
-            int ret = kill(cur_fg_child_pid, SIGINT);
-            if (ret == -1)
-                fprintf(stderr, "\033[1;31mERROR: kill: errno(%d) : %s\033[0m\n", errno, strerror(errno));
-            else
-            {
+            // int ret = kill(cur_fg_child_pid, SIGINT);
+            // if (ret == -1)
+            //     fprintf(stderr, "\033[1;31mERROR: kill: errno(%d) : %s\033[0m\n", errno, strerror(errno));
+            // else
+            // {
                 printf("\nsent signal %d to process with pid %d\n", SIGINT, cur_fg_child_pid);
                 cur_fg_child_pid = -1;
                 free(cur_fg_child_pname);
                 cur_fg_child_pname = NULL;
-            }
+            // }
         }
     }
 }
@@ -73,18 +69,21 @@ void handle_CTRL_Z(int signal)
 {
     if (signal == SIGTSTP)
     {
-
         if (cur_fg_child_pid == -1)
             printf("\nNo foreground process is running at the moment. You can still enter commands (or just press enter)\n");
         else
         {
-            setpgid(cur_fg_child_pid, 0); // make gid different, hence msking it a bg process
+            if(setpgid(0, 0) == -1) // make gid different, hence making it a bg process
+            {
+                printf("supppppppp errno :%d: %s\n", errno, strerror(errno));
+                return;
+            }
 
-            int ret = kill(cur_fg_child_pid, SIGSTOP); // send stop signal
-            if (ret == -1)
-                fprintf(stderr, "\033[1;31mERROR: kill: errno(%d) : %s\033[0m\n", errno, strerror(errno));
-            else
-                printf("\nsent signal %d to process with pid %d\n", SIGSTOP, cur_fg_child_pid);
+            // int ret = kill(cur_fg_child_pid, SIGTSTP); // send stop signal
+            // if (ret == -1)
+            //     fprintf(stderr, "\033[1;31mERROR: kill: errno(%d) : %s\033[0m\n", errno, strerror(errno));
+            // else
+            printf("\nsent signal %d to process with pid %d\n", SIGTSTP, cur_fg_child_pid);
 
             // add to global bg processes list
             if (bg_processes_count < MAX_BG_PROCESSES_TRACKED)
