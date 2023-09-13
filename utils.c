@@ -127,6 +127,8 @@ void execute(shell_command_data_ptr comm)
             fg(comm->words, comm->num_args);
         else if (strcmp(comm->words[0], "neonate") == 0)
             neonate(comm->words, comm->num_args);
+        else if (strcmp(comm->words[0], "iMan") == 0)
+            iman(comm->words, comm->num_args);
         else
             system_command(comm);
     }

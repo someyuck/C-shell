@@ -22,6 +22,9 @@
 #include <sys/dir.h>
 #include <ctype.h>
 #include <termios.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 
 #include "prompt.h"
 #include "input_defs.h"
@@ -38,6 +41,7 @@
 #include "ping.h"
 #include "fgbg.h"
 #include "neonate.h"
+#include "iman.h"
 
 #include "utils.h"
 
