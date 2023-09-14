@@ -15,15 +15,16 @@ void system_command(shell_command_data_ptr command_data_ptr)
     if (child_pid < 0)
     {
         fprintf(stderr, "\033[1;31mERROR: fork : errorno(%d) : %s\033[0m\n", errno, strerror(errno));
+        for (int x = 0; x < command_data_ptr->num_args; x++)
+            free(args[x]);
+        free(args);
         return;
     }
 
     else if (child_pid == 0)
     {
         if (command_data_ptr->fg_or_bg == 1)
-        {
-        setpgid(0, 0);
-        }
+            setpgid(0, 0);
         ret = execvp(args[0], args);
         if (ret == -1)
         {
@@ -33,9 +34,9 @@ void system_command(shell_command_data_ptr command_data_ptr)
                 fprintf(stderr, "\033[1;31mexecvp: errno(%d) : %s\033[0m\n", errno, strerror(errno));
 
             // free up space
-            // for (int i = 0; i < command_data_ptr->num_args; i++)
-            //     free(args[i]);
-            // free(args);
+            for (int i = 0; i < command_data_ptr->num_args; i++)
+                free(args[i]);
+            free(args);
             exit(0);
         }
         else
@@ -45,7 +46,6 @@ void system_command(shell_command_data_ptr command_data_ptr)
     {
         if (command_data_ptr->fg_or_bg == 0) // foreground process
         {
-            // setpgid(child_pid, getpgid(shell_pid)); // restore pgid of fg processes
             // store pid for handling signals
             cur_fg_child_pid = child_pid;
             if (cur_fg_child_pname != NULL)
@@ -107,9 +107,8 @@ void system_command(shell_command_data_ptr command_data_ptr)
 
         // free up space
         for (int i = 0; i < command_data_ptr->num_args; i++)
-        {
             free(args[i]);
-        }
+        free(args);
     }
 }
 

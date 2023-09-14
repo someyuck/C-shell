@@ -13,6 +13,11 @@ void proclore(char **args, int num_args)
         pid_string = (char *)malloc(sizeof(char) * (length_pid + 1));
         snprintf(pid_string, length_pid + 1, "%d", pid);
     }
+    else if (num_args > 2)
+    {
+        fprintf(stderr, "\033[1;31mERROR: proclore : invalid syntax\033[0m\n");
+        return;
+    }
     else
     {
         pid_string = (char *)malloc(sizeof(char) * (strlen(args[1]) + 1));
@@ -28,6 +33,8 @@ void proclore(char **args, int num_args)
     if (fp == NULL)
     {
         printf("can't access info of process with pid %s\n", pid_string);
+        free(file_path);
+        free(pid_string);
         return;
     }
     char *buffer = (char *)malloc(sizeof(char) * 4096);
@@ -95,46 +102,45 @@ void proclore(char **args, int num_args)
     buffer = (char *)malloc(sizeof(char) * 4096);
     buffer[4095] = '\0';
     ssize_t exec_path_length = readlink(file_path, buffer, 4095);
-    if(exec_path_length == 4095 || exec_path_length == -1){
+    if (exec_path_length == 4095 || exec_path_length == -1)
+    {
         fprintf(stderr, "\033[1;31mERROR: readlink: errno(%d) : %s\033[0m\n", errno, strerror(errno));
+        free(file_path);
+        free(pid_string);
+        free(buffer);
         return;
     }
     buffer[exec_path_length] = '\0';
-    
+
     // print relative path if it's in home directory's subtree, else absolute path
     int is_path_in_home_dir;
     int i = 0;
-    while(i< strlen(home_directory) && i < exec_path_length)
+    while (i < strlen(home_directory) && i < exec_path_length)
     {
-        if(home_directory[i] != buffer[i]){
+        if (home_directory[i] != buffer[i])
+        {
             is_path_in_home_dir = 0;
             break;
         }
         i++;
     }
-    if(home_directory[i] == '\0' && (buffer[i] != '\0' || buffer[i] == '\0')) // either home dir itself or inside home dir
-    {
+    if (home_directory[i] == '\0' && (buffer[i] != '\0' || buffer[i] == '\0')) // either home dir itself or inside home dir
         is_path_in_home_dir = 1;
-    }
-    else if(home_directory[i] != '\0' && buffer[i] == '\0') // path is parent of home dir
-    {
+    else if (home_directory[i] != '\0' && buffer[i] == '\0') // path is parent of home dir
         is_path_in_home_dir = 0;
-    }
 
-
-    if(is_path_in_home_dir == 0) // print absolute path
-    {
+    if (is_path_in_home_dir == 0) // print absolute path
         printf("Executable path : %s\n", buffer);
-    }
     else // print relative path
     {
-        char *rel_exec_path = (char*)malloc(sizeof(char)*(1+ exec_path_length - strlen(home_directory) + 1));
-        strcpy(rel_exec_path,"~");
+        char *rel_exec_path = (char *)malloc(sizeof(char) * (1 + exec_path_length - strlen(home_directory) + 1));
+        strcpy(rel_exec_path, "~");
         strcat(rel_exec_path, (buffer + strlen(home_directory)));
         printf("Executable path : %s\n", rel_exec_path);
         free(rel_exec_path);
     }
 
+    free(file_path);
+    free(pid_string);
     free(buffer);
-
 }

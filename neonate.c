@@ -49,7 +49,12 @@ void neonate(char **args, int num_args)
     {
         char *end;
         int time_interval = strtol(args[2], &end, 10);
-        if (strcmp(args[1], "-n") != 0 || errno == EINVAL || time_interval < 0 || (end == args[1] && time_interval == 0) || *end != '\0')
+        if(strcmp(args[1], "-n") != 0 )
+        {
+            fprintf(stderr, "\033[1;31mERROR: neonate: invalid syntax\033[0m\n");
+            return;
+        }
+        if ( errno == EINVAL || time_interval < 0 || (end == args[1] && time_interval == 0) || *end != '\0')
         {
             fprintf(stderr, "\033[1;31mERROR: neonate: invalid time interval argument\033[0m\n");
             return;

@@ -89,6 +89,8 @@ void pastevents(char **args, int num_args)
         free(lines);
         free(history_path);
     }
+    else
+        fprintf(stderr, "\033[1;31mERROR: pastevents: invalid syntax\033[0m\n");
 }
 
 void store_commands()
@@ -174,12 +176,16 @@ void store_commands()
                         char *prev_cmd = trim(write_list[num_lines - prev_process_idx], strlen(write_list[num_lines - prev_process_idx]), &len);
                         if (prev_cmd[len - 1] == ';') // as we will be adding a ';', if the current last command in the input string
                             prev_cmd[len - 1] = '\0';
-                        printf("prev: [%s]\n", prev_cmd);
                         write_string = (char *)realloc(write_string, sizeof(char) * (strlen(write_string) + 1 + strlen(prev_cmd) + 2));
                         strcat(write_string, " ");
                         strcat(write_string, prev_cmd);
-                        printf("ws: [%s]\n", write_string);
                     }
+                }
+                else // invalid pastevents command so we store it
+                {
+                    write_string = (char *)realloc(write_string, sizeof(char) * (strlen(write_string) + 1 + strlen(latest_pipelines_list[i][j]) + 1));
+                    strcat(write_string, " ");
+                    strcat(write_string, latest_pipelines_list[i][j]);
                 }
             }
             else
@@ -250,7 +256,6 @@ void store_commands()
     {
         write_list = (char **)realloc(write_list, sizeof(char *) * (num_lines + 1));
         write_list[num_lines++] = write_string;
-        // printf("write string: ''%s''\n", write_string);
     }
     else if (write_string != NULL)
         free(write_string);

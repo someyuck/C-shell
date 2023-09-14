@@ -11,7 +11,6 @@ void prompt()
     if (username == NULL)
         return;
     char *hostname = (char *)malloc(sizeof(char) * 4096);
-    assert(hostname != NULL);
     gethostname(hostname, 4096);
 
     // handling pwd path

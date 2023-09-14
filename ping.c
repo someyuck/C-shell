@@ -51,16 +51,9 @@ void handle_CTRL_C(int signal)
             printf("\nNo foreground process is running at the moment. You can still enter commands (or just press enter)\n");
         else
         {
-            // int ret = kill(cur_fg_child_pid, SIGINT);
-            // if (ret == -1)
-            //     fprintf(stderr, "\033[1;31mERROR: kill: errno(%d) : %s\033[0m\n", errno, strerror(errno));
-            // else
-            // {
-            // printf("\nsent signal %d to process with pid %d\n", SIGINT, cur_fg_child_pid);
             cur_fg_child_pid = -1;
             free(cur_fg_child_pname);
             cur_fg_child_pname = NULL;
-            // }
         }
     }
 }
@@ -78,12 +71,6 @@ void handle_CTRL_Z(int signal)
                 fprintf(stderr, "\033[1;31mERROR: setpgid: errno :%d: %s\033[0m\n", errno, strerror(errno));
                 return;
             }
-
-            // int ret = kill(cur_fg_child_pid, SIGTSTP); // send stop signal
-            // if (ret == -1)
-            //     fprintf(stderr, "\033[1;31mERROR: kill: errno(%d) : %s\033[0m\n", errno, strerror(errno));
-            // else
-            // printf("\nsent signal %d to process with pid %d\n", SIGTSTP, cur_fg_child_pid);
 
             // add to global bg processes list
             if (bg_processes_count < MAX_BG_PROCESSES_TRACKED)
@@ -138,5 +125,4 @@ void handle_CTRL_D()
     }
     printf("\n\033[1;31mkilled all spawned processes\033[0m\n");
     printf("\033[1;31mlogging out of shell\033[0m\n");
-    // exit(0);
 }

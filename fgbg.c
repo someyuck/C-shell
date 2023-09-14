@@ -68,12 +68,11 @@ void fg(char **args, int num_args)
         {
             if (kill(target_pid, SIGCONT) == -1)
                 fprintf(stderr, "\033[1;31mERROR: kill: errno(%d) : %s\033[0m\n", errno, strerror(errno));
-            else
-                printf("process with pid %d running now\n", pid);
         }
+        printf("process with pid %d running (in foreground) now\n", pid);
 
         // now send it back to fg by setting its group id equal to current processes group id
-        setpgid(pid, tpgid);
+        setpgid(pid, tcgetpgrp(0));
 
         // do the time handling for prompt and wait (give control of terminal)
         int status;
@@ -96,8 +95,8 @@ void fg(char **args, int num_args)
             {
                 if (long_fg_process != NULL)
                     free(long_fg_process);
-                long_fg_process = (char *)malloc(sizeof(char) * (strlen(args[0]) + 3 + 1)); // "<proc> : ", duration directly printed in prompt.c
-                strcpy(long_fg_process, args[0]);
+                long_fg_process = (char *)malloc(sizeof(char) * (strlen(pname) + 3 + 1)); // "<proc> : ", duration directly printed in prompt.c
+                strcpy(long_fg_process, pname);
                 strcat(long_fg_process, " : ");
                 long_fg_process_strlen = strlen(long_fg_process);
                 long_fg_process_duration = child_time;
@@ -155,7 +154,7 @@ void bg(char **args, int num_args)
                 fprintf(stderr, "\033[1;31mERROR: kill: errno(%d) : %s\033[0m\n", errno, strerror(errno));
             }
             else
-                printf("process with pid %d running now\n", pid);
+                printf("process with pid %d running (in background) now\n", pid);
         }
         else
             printf("\033[1;31mNo such process found (process exists but is neither running nor stopped)\033[0m\n");

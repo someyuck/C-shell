@@ -51,11 +51,8 @@ char **readlines(const char *path, int *num_lines)
     char **lines = NULL;
     *num_lines = 0;
 
-    // fread(buf, sizeof(char), 4096 * 20, fp);
-
     while (fgets(line, sizeof(line) / sizeof(char) - 1, fp) != NULL)
     {
-        // printf("%s\n", line);
         line[strlen(line) - 1] = '\0'; // omit the last \n
         lines = (char **)realloc(lines, sizeof(char *) * ((*num_lines) + 1));
         int len;
@@ -63,26 +60,6 @@ char **readlines(const char *path, int *num_lines)
     }
 
     fclose(fp);
-
-    // // printf("buf: (%s)\n", buf);
-    // char *line = NULL;
-    // while ((*num_lines) == 0 || line != NULL)
-    // {
-    //     if (*num_lines == 0)
-    //         line = strtok(buf, "\n\r");
-    //     else
-    //         line = strtok(NULL, "\n\r");
-
-    //     if (line == NULL)
-    //         break;
-
-    //     lines = (char **)realloc(lines, sizeof(char *) * ((*num_lines) + 1));
-    //     lines[(*num_lines)] = (char *)malloc(sizeof(char) * (strlen(line) + 1));
-    //     strcpy(lines[(*num_lines)++], line);
-    // }
-
-    // printf("readlines numlines = %d\n",*num_lines);
-
     return lines;
 }
 
@@ -96,10 +73,7 @@ void writelines(const char *path, char **lines, int num_lines)
         fp = fopen(path, "w");
     }
     for (int i = 0; i < num_lines; i++)
-    {
         fprintf(fp, "%s\n", lines[i]);
-        // printf("lines [%d] : {%s}\n", i, lines[i]);
-    }
     fclose(fp);
 }
 
