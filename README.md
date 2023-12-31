@@ -1,4 +1,47 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/76mHqLr5)
+# C shell
+
+A shell written entirely in C, intending to mimic bash. I have implemented some commands, and other shell commands are directly executed using `exec`.
+
+## Installation
+Clone the repository and `cd` into it. Open a terminal in the directory and run `make`. This will create the executable binary, `a.out`. Run it as `./a.out` to launch the shell.
+
+## Features
+This shell provides the following features:
+
+### Prompt
+
+### Input
+
+### `warp`
+
+### `peek`
+
+### `pastevents`
+
+### System Commands
+
+### `proclore`
+
+### `seek`
+
+### I/O Redirection
+
+### Piping
+
+### `activities`
+
+### `ping`
+
+### Other signals
+
+### `fg`
+
+### `bg`
+
+### `neonate`
+
+### `iMan`
+
 # Description
 The following code files are part of my implementation of Part A:
 - ```main.c```

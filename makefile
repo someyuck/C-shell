@@ -1,2 +1,6 @@
+CC = gcc
+CFLAGS = -g -Wall -fsanitize=address,null
+MAINFILES = src/prompt.c src/parse_input.c src/warp.c src/peek.c src/proclore.c src/system_commands.c src/pastevents.c src/utils.c src/seek.c src/redirect.c src/pipeline.c src/activities.c src/ping.c src/fgbg.c src/neonate.c src/iman.c
+
 main:
-	gcc -g main.c prompt.c parse_input.c warp.c peek.c proclore.c system_commands.c pastevents.c utils.c seek.c redirect.c pipeline.c activities.c ping.c fgbg.c neonate.c iman.c
+	$(CC) $(CFLAGS) src/main.c $(MAINFILES)
