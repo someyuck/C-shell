@@ -3,18 +3,39 @@
 A shell written entirely in C, intending to mimic bash. I have implemented some commands, and other shell commands are directly executed using `exec`.
 
 ## Installation
-Clone the repository and `cd` into it. Open a terminal in the directory and run `make`. This will create the executable binary, `a.out`. Run it as `./a.out` to launch the shell.
+Clone the repository and `cd` into it. Open a terminal in the directory and run `make`. This will create the executable binary, `a.out`. Run it as `./a.out` to launch the shell. The executable can be run in any directory in any number of terminals, and can even be called in itself.
 
 ## Features
 This shell provides the following features:
 
 ### Prompt
+The shell displays the current user's username and the system name in the prompt, separated by an @, along with the current working directory denoted by its path relative to the directory in which the shell was called, which itself becomes the shell's home directory (denoted by `~`). If the current working directory is outside the home directory, then its absolute path is shown.
+
+If a foreground process took more than 2 seconds to execute, the prompt displays the process' name along with the time taken in seconds.
 
 ### Input
+The shell supports any number of commands separated by semicolons (;) and ampersands (&), denoting foreground and background processes. It also supports i/o redirection and piping (more on these later).
+The shell accounts for random whitespaces and displays an error message if an erroneous command is entered.
 
 ### `warp`
+This command changes the current working directory of the shell, just like `cd` in bash. The target directory's name is provided as argument to the command, otherwise it just moves to the home directory.
+`warp` supports both relative and absolute paths, and by default, a non-absolute path will be treatedrelative to the current working directory.
+`warp` also supports the `.` (current directory), `..` (parent directory), `~` (shell's home directory) and `-` (previous directory, if `warp` had been called before) flags.
+
+If an erroneous path is given, `warp` does nothing and stays in the current directory.
+
+`warp` supports multiple arguments, and sequentially changes into each directory mentioned.
+
+After changing into a directory, `warp` prints its full path to the terminal.
 
 ### `peek`
+
+This command, just like the `ls` command in bash, lists all the files and directories in the specified directory in lexicographical order. If no argument is given, it lists the contents of the current working directory.
+It supports the following flags:
+`-a`: displays all files and directories, including hidden ones
+`-l`: displays additional information for each entry
+
+Similar to warp, it supports `.`, `..`, `~`, `-`, relative and absolute paths and colour-codes the output.
 
 ### `pastevents`
 
