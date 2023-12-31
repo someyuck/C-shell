@@ -127,7 +127,7 @@ void peek(char **args, int num_args)
                 strcat(entry_full_path, entry->d_name);
 
                 struct stat *entry_stat_ptr = (struct stat *)malloc(sizeof(struct stat));
-                stat(entry_full_path, entry_stat_ptr);
+                lstat(entry_full_path, entry_stat_ptr);
 
                 total_blocks += (entry_stat_ptr->st_blocks) / 2;
 
@@ -150,7 +150,7 @@ void peek(char **args, int num_args)
                 strcat(entry_full_path, entry_strings_list[i]);
 
                 struct stat *entry_stat_ptr = (struct stat *)malloc(sizeof(struct stat));
-                stat(entry_full_path, entry_stat_ptr);
+                lstat(entry_full_path, entry_stat_ptr);
 
                 char *file_info_string;
                 if (flag_status[1] == 1)
@@ -285,7 +285,7 @@ void peek(char **args, int num_args)
                 }
                 else if (S_ISLNK(entry_stat_ptr->st_mode))
                 {
-                    printf("%s\036[1;32m%s\033[0m ", file_info_string, entry_strings_list[i]);
+                    printf("%s\033[1;32m%s\033[0m ", file_info_string, entry_strings_list[i]);
                 }
                 else
                 {

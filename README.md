@@ -35,15 +35,37 @@ It supports the following flags:
 `-a`: displays all files and directories, including hidden ones
 `-l`: displays additional information for each entry
 
-Similar to warp, it supports `.`, `..`, `~`, `-`, relative and absolute paths and colour-codes the output.
+Its usage is `peek <flags> <path/to/directory>`
+
+Similar to warp, it supports `.`, `..`, `~`, `-`, relative and absolute paths and colour-codes the output. It does not however, support multiple arguments, and will peek at the current working directory instead.
 
 ### `pastevents`
+This command is similar to the `history` command in bash, with additional festures. It persistently stores the 15 most recent command statements given as input to the shell.
+If two consecutive commands are the same, the later one is not stored. `pastevents` itself and its derivatives (mentioned below) are not stored. Erroneous commands are stored, including `pastevents` derivatives.
+
+- `pastevents purge`
+This clears all the currently stored commands.
+- `pastevents execute <n>`
+This executes the _n<sup>th</sup>_ most recent command stored in history.
 
 ### System Commands
+All other commands supported by other shells like bash (and installed in the user's system) can be executed. Any command entered other than the above implemented commands is passed to `execvp()` and thus executed. Note that if the output of the command is coloured then the output shown in the shell need not be coloured.
+The shell supports both foreground and background processes, with status messages printed for background processes accordingly as the proccess exited successfully or failed.
 
 ### `proclore`
+This command gives information on a process, whose process ID is passed as argument, printing its process status, process group, virtual memory, and the executable's path. The process status can take values `R`/`R+` (running), `S`/`S+` (sleeping) and `Z` (zombie), with the `+` denoting a foreground process.
 
 ### `seek`
+This command recursively searches for a file/directory in a specified target directory (or current directory if none given), returning a list of colour-coded paths relative to the target directory of all matches.
+
+It supports the flags:
+`-d`: looks for only directories
+`-f`: looks for only files
+`-e`: if a single file is found (and no directories are found if `-f` not used), it prints the content of the matched file; if a single directory is found (and no files are found if `-d` is not used) then it changes the current working directory to it.
+
+Note that `-f` and `-d` cannot be used together
+
+Its usage is `seek <flags> <target> <path/to/target/directory>`
 
 ### I/O Redirection
 
