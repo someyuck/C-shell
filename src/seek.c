@@ -117,7 +117,6 @@ void seek(char **args, int num_args)
     // search recursively
     char *cwd_save = getcwd(NULL, 0);
     chdir(target_dir);
-    printf("target: %s\n", getcwd(NULL, 0));
     if (is_target_mentioned == 0)
         seekRecursive(args[num_args - 1], target_dir, target_dir, &num_file_matches, &num_dir_matches, &match_if_e_flag, flag_status);
     else if (is_target_mentioned == 1)
