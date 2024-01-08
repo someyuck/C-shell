@@ -18,7 +18,7 @@ The shell displays the current user's username and the system name in the prompt
 If a foreground process took more than 2 seconds to execute, the prompt displays the process' name along with the time taken in seconds.
 
 ### Input
-The shell supports any number of commands separated by semicolons (;) and ampersands (&), denoting foreground and background processes. It also supports i/o redirection and piping (more on these later).
+The shell supports any number of commands separated by semicolons (;) and ampersands (&), denoting foreground and background processes. It also supports I/O redirection and piping.
 The shell accounts for random whitespaces and displays an error message if an erroneous command is entered.
 
 ### I/O Redirection
@@ -26,7 +26,7 @@ This shell also supports input-output redirection, used with the `<` (input), `>
 
 ### Piping
 This shell also supports piping, denoted by the `|` operator, to pass the output of one command as input to another. It supports any number of pipes, with commands run sequentially from left to right.
-The shell also redirection along with piping, using the bash convention in giving i/o redirection higher priority over piping.
+The shell also supports redirection along with piping, using the bash convention in giving I/O redirection higher priority over piping.
 
 ### `warp`
 This command changes the current working directory of the shell, just like `cd` in bash. The target directory's name is provided as argument to the command, otherwise it just moves to the home directory.
@@ -38,6 +38,8 @@ If an erroneous path is given, `warp` does nothing and stays in the current dire
 `warp` supports multiple arguments, and sequentially changes into each directory mentioned.
 
 After changing into a directory, `warp` prints its full path to the terminal.
+
+Its usage is `warp <path/to/target/directory>`
 
 ### `peek`
 
@@ -65,14 +67,14 @@ This command gives information on a process, whose process ID is passed as argum
 Run the shell with `sudo` for it to work for all processes.
 
 ### `seek`
-This command recursively searches for a file/directory in a specified target directory (or current directory if none given), returning a list of colour-coded paths relative to the target directory of all matches.
+This command recursively searches for a file/directory (whose name must be given) in a specified target directory (or current directory if none given), returning a list of colour-coded paths relative to the target directory of all matches.
 
 It supports the flags:
 `-d`: looks for only directories
 `-f`: looks for only files
 `-e`: if a single file is found (and no directories are found if `-f` not used), it prints the content of the matched file; if a single directory is found (and no files are found if `-d` is not used) then it changes the current working directory to it.
 
-Note that `-f` and `-d` cannot be used together
+Note that `-f` and `-d` cannot be used together.
 
 Its usage is `seek <flags> <target> <path/to/target/directory>`
 
@@ -127,8 +129,13 @@ The entirety of the codebase is in `src/`. Each functionality has its own `.h` a
 # Assumptions
 1. For ```ping```, entering negative pids will throw an error, as first of all they are invalid and calling `kill()` on negatives is undesirable, as e.g. on pid = -1, `kill()` with `SIGKILL` essentially logs us out of the system. Entering 0 sends a signal to the processes in the shell's process group, so that is allowed
 2. For `iMan`, I have not processed HTML tags inside the actual content of the webpage, and have left them as it is. So, tags like `<STRONG>` may be here and there in the text.
+3. The output of background processes will be printed on the terminal, and it may overlap with the prompts. In such cases, press ENTER to get a fresh prompt with clear view (although it would still work with the overlapped prompt).
+4. For I/O redirection, I have assumed that the user will enter files that are in the current working directory, and have not implemented relative paths.
+5. For ```ping```, entering negative pids will throw an error, as first of all they are invalid and calling `kill()` on negatives is undesirable, as e.g. on pid = -1, `kill()` with `SIGKILL` essentially logs us out of the system. Entering 0 sends a signal to the processes in the shell's process group, so that is allowed.
+
 
 # Future Scope
 1. Adding support for the keystrokes : `up-arrow`/`Ctrl+P`, `down-arrow`, `Tab` etc. as with usual terminal emulators.
 2. More extensive error messages and text processing.
 3. Bracket and quote expansion as in bash (Currently `sed` doesn't work with piping because I have not implemented quote expansion).
+4. Adding support to relative paths for I/O redirection.
